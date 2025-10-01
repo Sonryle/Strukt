@@ -1,6 +1,5 @@
 #include <stdio.h>
 #include <GLFW/glfw3.h>
-#include <yaml.h>
 
 #include "client/window.h"
 #include "client/renderer.h"

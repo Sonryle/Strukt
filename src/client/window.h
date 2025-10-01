@@ -5,14 +5,13 @@
 
 #include <GLFW/glfw3.h>
 
-struct WindowOptions {
-        const int initial_width;
-        const int initial_height;
+struct WindowSettings {
+        int initial_width;
+        int initial_height;
         const char* window_title;
-
 };
 
-extern struct WindowOptions window_options;
+extern struct WindowSettings window_settings;
 extern GLFWwindow* window;
 
 int initWindow();

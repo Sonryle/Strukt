@@ -15,7 +15,7 @@ int initRenderer()
         }
         
         glClearColor(0.47f, 0.35f, 0.8f, 1.0f);
-        glViewport(0, 0, window_options.initial_width, window_options.initial_height);
+        glViewport(0, 0, window_settings.initial_width, window_settings.initial_height);
 
         return 0;
 }
