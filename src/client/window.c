@@ -1,10 +1,10 @@
-#include "graphics.h"
-
 #include <stdio.h>
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
 
-struct RendererOptions renderer_options = {
+#include "window.h"
+
+struct WindowOptions window_options = {
         640,
         480,
         "Strukt",
@@ -13,7 +13,7 @@ GLFWwindow* window;
 
 void framebuffer_size_callback(GLFWwindow* window, int width, int height);
 
-int initRenderer(void)
+int initWindow(void)
 {
         if (!glfwInit())
         {
@@ -25,9 +25,9 @@ int initRenderer(void)
         glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
         window = glfwCreateWindow(
-                renderer_options.initial_width,
-                renderer_options.initial_height,
-                renderer_options.window_title,
+                window_options.initial_width,
+                window_options.initial_height,
+                window_options.window_title,
                 NULL,
                 NULL
         );
@@ -40,34 +40,10 @@ int initRenderer(void)
         }
 
         glfwMakeContextCurrent(window);
-
-        if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress))
-        {
-                fprintf(stderr, "Failed to initialize GLAD\n");
-                glfwTerminate();
-                return -1;
-        }
-        
-        glClearColor(0.47f, 0.35f, 0.8f, 1.0f);
-        glViewport(0, 0, renderer_options.initial_width, renderer_options.initial_height);
         return 0;
 }
 
-int render()
-{
-        /* Render here */
-        glClear(GL_COLOR_BUFFER_BIT);
-
-        /* Swap front and back buffers */
-        glfwSwapBuffers(window);
-
-        /* Poll for and process events */
-        glfwPollEvents();
-
-        return 0;
-}
-
-void terminateRenderer()
+void terminateWindow()
 {
         glfwTerminate();
         return;

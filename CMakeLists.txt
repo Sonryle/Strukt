@@ -4,8 +4,8 @@ set (CMAKE_CXX_STANDARD 17)
 project(strukt)
 
 # Add the executable
-file(GLOB SRC_FILES "client/*.c")
-file(GLOB HEADER_FILES "client/*.h")
+file(GLOB_RECURSE SRC_FILES "src/*.c")
+file(GLOB_RECURSE HEADER_FILES "src/*.h")
 add_executable(strukt ${SRC_FILES} ${HEADER_FILES})
 
 # Add all libraries
@@ -14,6 +14,7 @@ add_subdirectory(dependencies)
 # Link all libraries
 target_link_libraries(strukt PRIVATE glad)
 target_link_libraries(strukt PRIVATE glfw)
+target_link_libraries(strukt PRIVATE yaml)
 
 # Set our project as the Visual Studio startup project
 set_property(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR} PROPERTY VS_STARTUP_PROJECT ${CMAKE_PROJECT_NAME})

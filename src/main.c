@@ -1,9 +1,14 @@
 #include <stdio.h>
-#include "graphics.h"
+#include <GLFW/glfw3.h>
+#include <yaml.h>
+
+#include "client/window.h"
+#include "client/renderer.h"
 
 int main()
 {
         printf("Welcome To Strukt\n");
+        initWindow();
         initRenderer();
 
         while(!glfwWindowShouldClose(window))
@@ -11,6 +16,6 @@ int main()
                 render();
         }
 
-        terminateRenderer();
+        terminateWindow();
         return 0;
 }
