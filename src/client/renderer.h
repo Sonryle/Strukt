@@ -1,5 +1,5 @@
 #pragma once
 
-int initRenderer();
+int init_renderer();
 int render();
-void terminateRenderer();
+void terminate_renderer();
