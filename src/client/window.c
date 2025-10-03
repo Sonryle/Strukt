@@ -14,7 +14,7 @@ int init_window(void)
 {
         if (!glfwInit())
         {
-                // log_err("window.c - GLFW failed to initialize");
+                LOG_ERR("window.c - GLFW failed to initialize");
                 return -1;
         }
         glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
@@ -31,7 +31,7 @@ int init_window(void)
 
         if (window == NULL)
         {
-                // log_err("window.c - failed to create GLFW window");
+                LOG_ERR("window.c - failed to create GLFW window");
                 glfwTerminate();
                 return -1;
         }

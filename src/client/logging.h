@@ -8,7 +8,7 @@
 
 #include <strukt.h>
 
-#define LOG_FILENAME "client_log.txt"
+#define LOG_FILENAME "clog.txt"
 #define LOG_DEBUG(fmt, ...) log_debug(__FUNCTION__, file_path_relative_to_project(__FILE__), __LINE__, fmt, ##__VA_ARGS__)
 #define LOG_ERR(fmt, ...) log_err(__FUNCTION__, file_path_relative_to_project(__FILE__), __LINE__, fmt, ##__VA_ARGS__)
 #define LOG_INFO(fmt, ...) log_info(__FUNCTION__, file_path_relative_to_project(__FILE__), __LINE__, fmt, ##__VA_ARGS__)

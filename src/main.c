@@ -1,4 +1,3 @@
-#define DEBUG
 #include <GLFW/glfw3.h>
 
 #include <client/logging.h>
@@ -13,10 +12,6 @@ int main()
 {
         if (setup_client_environment())
                 return -1;
-        LOG_DEBUG("Hello this is a debug log");
-        LOG_ERR("Hello this is an error log");
-        LOG_INFO("Hello this is an info log");
-        LOG_WARN("Hello this is a warning log");
 
         while(!glfwWindowShouldClose(window))
         {
