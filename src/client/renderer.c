@@ -2,10 +2,10 @@
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
 
-#include "logging.h"
-#include "settings.h"
-#include "renderer.h"
-#include "window.h"
+#include <client/logging.h>
+#include <client/settings.h>
+#include <client/renderer.h>
+#include <client/window.h>
 
 int init_renderer()
 {

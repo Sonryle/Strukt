@@ -3,7 +3,7 @@
  * from client settings file into global settings structure.
 */
 #pragma once
-#define STRUKT_CLIENT_SETTINGS_FILENAME "client_settings.toml"
+#define CLIENT_SETTINGS_FILENAME "client_settings.toml"
 #include <tomlc17.h>
 
 extern toml_result_t toml_output;

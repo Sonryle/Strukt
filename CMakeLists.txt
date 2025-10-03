@@ -8,6 +8,9 @@ file(GLOB_RECURSE SRC_FILES "src/*.c")
 file(GLOB_RECURSE HEADER_FILES "src/*.h")
 add_executable(strukt ${SRC_FILES} ${HEADER_FILES})
 
+# Add includes
+target_include_directories(strukt PUBLIC ./src)
+
 # Add all libraries
 add_subdirectory(dependencies)
 

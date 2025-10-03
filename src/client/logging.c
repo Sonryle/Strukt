@@ -1,21 +1,21 @@
 #include <stdarg.h>
 
-#include "logging.h"
+#include <client/logging.h>
 
 FILE* client_log;
 
 int init_client_log()
 {
-        client_log = fopen(STRUKT_CLIENT_LOG_FILENAME, "wa"); 
+        client_log = fopen(LOG_FILENAME, "wa"); 
         if (client_log == NULL)
         {
-                fprintf(stderr, "Client Error - fopen(\"%s\", \"wa\"); failed...", STRUKT_CLIENT_LOG_FILENAME);
+                fprintf(stderr, "Client Error - fopen(\"%s\", \"wa\"); failed...", LOG_FILENAME);
                 return -1;
         }
         return 0;
 }
 
-void pre_macro_log_debug(const char* func, const char* file, const int line, const char* s, ...)
+void log_debug(const char* func, const char* file, const int line, const char* s, ...)
 {
 // #ifdef DEBUG
         if (client_log)
@@ -36,7 +36,7 @@ void pre_macro_log_debug(const char* func, const char* file, const int line, con
 // #endif
 }
 
-void pre_macro_log_err(const char* func, const char* file, const int line, const char* s, ...)
+void log_err(const char* func, const char* file, const int line, const char* s, ...)
 {
         if (client_log)
         {
@@ -55,7 +55,7 @@ void pre_macro_log_err(const char* func, const char* file, const int line, const
         }
 }
 
-void pre_macro_log_info(const char* func, const char* file, const int line, const char* s, ...)
+void log_info(const char* func, const char* file, const int line, const char* s, ...)
 {
         if (client_log)
         {
@@ -70,7 +70,7 @@ void pre_macro_log_info(const char* func, const char* file, const int line, cons
         }
 }
 
-void pre_macro_log_warn(const char* func, const char* file, const int line, const char* s, ...)
+void log_warn(const char* func, const char* file, const int line, const char* s, ...)
 {
         if (client_log)
         {

@@ -1,10 +1,10 @@
 #define DEBUG
 #include <GLFW/glfw3.h>
 
-#include "client/logging.h"
-#include "client/settings.h"
-#include "client/window.h"
-#include "client/renderer.h"
+#include <client/logging.h>
+#include <client/settings.h>
+#include <client/window.h>
+#include <client/renderer.h>
 
 int setup_client_environment();
 void terminate_client();
@@ -13,10 +13,10 @@ int main()
 {
         if (setup_client_environment())
                 return -1;
-        log_debug("Hello this is a debug log");
-        log_err("Hello this is an error log");
-        log_info("Hello this is an info log");
-        log_warn("Hello this is a warning log");
+        LOG_DEBUG("Hello this is a debug log");
+        LOG_ERR("Hello this is an error log");
+        LOG_INFO("Hello this is an info log");
+        LOG_WARN("Hello this is a warning log");
 
         while(!glfwWindowShouldClose(window))
         {
@@ -38,20 +38,11 @@ int setup_client_environment()
                 return -1;
         }
         if (init_settings())
-        {
-                // log_err("main.c - init_settings() returned error");
                 return -1;
-        }
         if (init_window())
-        {
-                // log_err("main.c - init_window() returned error");
                 return -1;
-        }
         if (init_renderer())
-        {
-                // log_err("main.c - init_renderer() returned error");
                 return -1;
-        }
 
         return 0;
 }

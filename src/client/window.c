@@ -2,9 +2,9 @@
 #include <GLFW/glfw3.h>
 #include <tomlc17.h>
 
-#include "logging.h"
-#include "settings.h"
-#include "window.h"
+#include <client/logging.h>
+#include <client/settings.h>
+#include <client/window.h>
 
 GLFWwindow* window;
 

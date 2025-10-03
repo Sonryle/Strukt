@@ -1,8 +1,8 @@
 #include <string.h>
 
-#include "settings.h"
-#include "logging.h"
-#include "tomlc17.h"
+#include <client/settings.h>
+#include <client/logging.h>
+#include <tomlc17.h>
 
 void init_window_settings();
 void init_renderer_settings();
@@ -17,7 +17,7 @@ struct Settings settings = {
 
 int init_settings()
 {
-        toml_output = toml_parse_file_ex(STRUKT_CLIENT_SETTINGS_FILENAME);
+        toml_output = toml_parse_file_ex(CLIENT_SETTINGS_FILENAME);
         if (!toml_output.ok)
         {
                 // log_err("settings.c unable to load %s", STRUKT_CLIENT_SETTINGS_FILENAME);
