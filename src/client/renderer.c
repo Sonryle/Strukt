@@ -11,7 +11,7 @@ int init_renderer()
 {
         if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress))
         {
-                // log_err("renderer.c - failed to initialize GLAD");
+                log_err("failed to initialize GLAD");
                 glfwTerminate();
                 return -1;
         }

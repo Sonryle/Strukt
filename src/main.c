@@ -13,6 +13,11 @@ int main()
         if (setup_client_environment())
                 return -1;
 
+        log_debug("debug log test");
+        log_info("info log test");
+        log_err("error log test");
+        log_warn("warning log test");
+
         while(!glfwWindowShouldClose(window))
         {
                 render();
