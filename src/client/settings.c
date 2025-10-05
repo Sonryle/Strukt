@@ -7,11 +7,22 @@
 #include <client/settings.h>
 #include <client/logging.h>
 
+void create_default_client_settings_file();
 void parse_window_settings();
 void parse_renderer_settings();
 
-static struct WindowSettings window_settings;
-static struct RendererSettings renderer_settings;
+/* Default settings */
+static struct WindowSettings window_settings = {
+        .title = "Welcome To Strukt",
+        .initial_width = 500,
+        .initial_height = 250,
+        .fullscreen = false,
+};
+static struct RendererSettings renderer_settings = {
+        .bgr = 0.52,
+        .bgg = 0.25,
+        .bgb = 0.75,
+};
 struct Settings settings = {
         .window = &window_settings,
         .renderer = &renderer_settings,
@@ -22,8 +33,7 @@ toml_result_t toml_output;
 int parse_client_settings()
 {
         if (!file_exists(CLIENT_SETTINGS_FILENAME))
-            // Copy 
-            ;
+                create_default_client_settings_file();
 
         toml_output = toml_parse_file_ex(CLIENT_SETTINGS_FILENAME);
         if (!toml_output.ok)
@@ -38,6 +48,29 @@ int parse_client_settings()
         toml_free(toml_output);
 
         return 0;
+}
+
+void create_default_client_settings_file()
+{
+        FILE* settings_file = fopen(CLIENT_SETTINGS_FILENAME, "w");
+        if (settings_file == NULL)
+                log_err("unable to create default settings file");
+
+        /* Add window settings to file */
+        fprintf(settings_file, "[window]\n");
+        fprintf(settings_file, "title = \"%s\"\n", settings.window->title);
+        fprintf(settings_file, "initial_width = %d\n", settings.window->initial_width);
+        fprintf(settings_file, "initial_height = %d\n", settings.window->initial_height);
+        fprintf(settings_file, "fullscreen = %s\n", (settings.window->fullscreen)? "true" : "false");
+        fprintf(settings_file, "\n");
+
+        /* Add renderer settings to file */
+        fprintf(settings_file, "[renderer]\n");
+        fprintf(settings_file, "bgr = %.2f\n", settings.renderer->bgr);
+        fprintf(settings_file, "bgg = %.2f\n", settings.renderer->bgg);
+        fprintf(settings_file, "bgb = %.2f\n", settings.renderer->bgb);
+
+        fclose(settings_file);
 }
 
 void parse_window_settings()

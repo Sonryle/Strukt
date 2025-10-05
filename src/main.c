@@ -13,10 +13,10 @@ int main()
         if (setup_client_environment())
                 return -1;
 
-        log_debug("debug log test");
-        log_info("info log test");
-        log_err("error log test");
-        log_warn("warning log test");
+        log_debug("debug log test, %s", "Hello World");
+        log_info("info log test, %s", "Hello World");
+        log_err("error log test, %s", "Hello World");
+        log_warn("warning log test, %s", "Hello World");
 
         while(!glfwWindowShouldClose(window))
         {
@@ -37,8 +37,7 @@ int setup_client_environment()
                 fprintf(stderr, "main.c - init_clientlog() returned error\n");
                 return -1;
         }
-        if (parse_client_settings())
-                return -1;
+        parse_client_settings();
         if (init_window())
                 return -1;
         if (init_renderer())

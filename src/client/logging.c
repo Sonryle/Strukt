@@ -20,18 +20,26 @@ void log_message(const char* level, const char* func, const char* file, const in
         va_list list;
         va_start(list, str);
 
+#ifdef _DEBUG
+        va_list copy;
+        va_copy(copy, list);
+
+        fprintf(stdout, "%s : %s:%d: In function '%s': ", level, file, line, func);
+        vfprintf(stdout, str, copy);
+        fprintf(stdout, "\n");
+
+        va_end(copy);
+#endif
+
         if (client_log)
         {
                 fprintf(client_log, "%s : %s:%d: In function '%s': ", level, file, line, func);
                 vfprintf(client_log, str, list);
                 fprintf(client_log, "\n");
+                fflush(client_log);     // logs are flushed immediately, instead of waiting for file to close
         }
-        fprintf(stderr, "%s : %s:%d: In function '%s': ", level, file, line, func);
-        vfprintf(stderr, str, list);
-        fprintf(stderr, "\n");
 
         va_end(list);
-        fflush(client_log);     // logs are flushed immediately, instead of waiting for file to close
 }
 
 void terminate_client_log()

@@ -10,8 +10,8 @@ extern toml_result_t toml_output;
 
 struct WindowSettings {
         const char* title;
-        long initial_width;
-        long initial_height;
+        int initial_width;
+        int initial_height;
         bool fullscreen;
 };
 
