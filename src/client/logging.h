@@ -10,7 +10,7 @@
 
 #define LOG_FILENAME "clog.txt"
 
-#ifdef DEBUG_MODE
+#ifdef _DEBUG
 #define log_debug(fmt, ...) log_message("DEBUG", __FUNCTION__, file_path_relative_to_project(__FILE__), __LINE__, fmt, ##__VA_ARGS__)
 #else
 #define log_debug(fmt, ...) ((void)0)

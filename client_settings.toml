@@ -1,0 +1,10 @@
+[window]
+title = "Welcome To Strukt"
+initial_width = 500
+initial_height = 250
+fullscreen = false
+
+[renderer]
+bgr = 0.5
+bgg = 0.15
+bgb = 0.85

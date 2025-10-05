@@ -1,13 +1,15 @@
 #include <string.h>
+#include <stdio.h>
 
-#include <client/settings.h>
-#include <client/logging.h>
 #include <tomlc17.h>
 
-void init_window_settings();
-void init_renderer_settings();
+#include <file_operations.h>
+#include <client/settings.h>
+#include <client/logging.h>
 
-toml_result_t toml_output;
+void parse_window_settings();
+void parse_renderer_settings();
+
 static struct WindowSettings window_settings;
 static struct RendererSettings renderer_settings;
 struct Settings settings = {
@@ -15,24 +17,30 @@ struct Settings settings = {
         .renderer = &renderer_settings,
 };
 
-int init_settings()
+toml_result_t toml_output;
+
+int parse_client_settings()
 {
+        if (!file_exists(CLIENT_SETTINGS_FILENAME))
+            // Copy 
+            ;
+
         toml_output = toml_parse_file_ex(CLIENT_SETTINGS_FILENAME);
         if (!toml_output.ok)
         {
-                log_err("unable to load \"%s\"", CLIENT_SETTINGS_FILENAME);
+                log_err("unable to load \"%s\", Toml error \"%s\"", CLIENT_SETTINGS_FILENAME, toml_output.errmsg);
                 return -1;
         }
 
-        init_window_settings();
-        init_renderer_settings();
+        parse_window_settings();
+        parse_renderer_settings();
 
         toml_free(toml_output);
 
         return 0;
 }
 
-void init_window_settings()
+void parse_window_settings()
 {
         /* Extract values */
         toml_datum_t title = toml_seek(toml_output.toptab, "window.title");
@@ -52,11 +60,9 @@ void init_window_settings()
 
         if (fullscreen.type == TOML_BOOLEAN) settings.window->fullscreen = fullscreen.u.boolean;
         else log_warn("missing or invalid window.fullscreen property in %s", CLIENT_SETTINGS_FILENAME);
-
-        return 0;
 }
 
-void init_renderer_settings()
+void parse_renderer_settings()
 {
         /* Extract values */
         toml_datum_t bgr = toml_seek(toml_output.toptab, "renderer.bgr");

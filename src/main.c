@@ -37,7 +37,7 @@ int setup_client_environment()
                 fprintf(stderr, "main.c - init_clientlog() returned error\n");
                 return -1;
         }
-        if (init_settings())
+        if (parse_client_settings())
                 return -1;
         if (init_window())
                 return -1;
@@ -50,5 +50,6 @@ int setup_client_environment()
 void terminate_client()
 {
         terminate_window();
+        terminate_renderer();
         terminate_client_log();
 }

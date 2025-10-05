@@ -1,5 +1,5 @@
 #include <string.h>
 
-#include <strukt.h>
+#include <file.h>
 
 /* Nothing here yet! */
