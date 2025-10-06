@@ -6,9 +6,9 @@ const char* file_path_relative_to_project(const char* path)
     return relative_path ? relative_path : path;
 }
 
-bool file_exists(const char* filename)
+bool file_exists(const char* path)
 {
-    FILE* fp = fopen(filename, "r");
+    FILE* fp = fopen(path, "r");
     if (fp) fclose(fp);
     return fp != NULL;
 }

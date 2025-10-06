@@ -7,8 +7,14 @@
 #include <client/renderer.h>
 #include <client/window.h>
 
-int create_shader(GLenum shader_type, const char* shader_path, GLuint* shader_ptr);
+const char* fs =
+        "#version 330 core\n"
+        "out vec4 FragColor;\n"
 
+        "void main()\n"
+        "{\n"
+        "FragColor = vec4(1.0f, 0.5f, 0.2f, 1.0f);\n"
+        "}\n";
 float vertices[] = {
     -0.5f, -0.5f, 0.0f,
      0.5f, -0.5f, 0.0f,
@@ -50,11 +56,60 @@ int init_renderer()
 
         // Create shaders
         // --------------
+
+        /* Load vertex shader file & copy it into string */
+        FILE* vs_file = fopen("shaders/source.vs", "r");
+        char* vs_src = NULL;
+
+        if (vs_file)
+        {
+                /* Move file pointer to end and record position into char_count */
+                fseek(vs_file, 0, SEEK_END);
+                int char_count = ftell(vs_file);
+                log_debug("file is %ld characters (bytes) large", char_count);
+
+                vs_src = (char*)malloc((char_count + 1) * sizeof(char));
+                if (vs_src)
+                {
+                        /* Move file pointer to beginning and copy into vs_src */
+                        fseek(vs_file, 0, SEEK_SET);
+                        fread((void*)vs_src, sizeof(char), length, vs_file);
+                        vs_src[length] = '\0';
+                }
+                fclose(vs_file);
+        } else {
+                log_err("could not find vertex shader file");
+        }
+        log_info("Loaded Shader:\n%s", vs_src);
+
+        /* Create shaders */
+        vertex_shader = glCreateShader(GL_VERTEX_SHADER);
+        fragment_shader = glCreateShader(GL_FRAGMENT_SHADER);
         
-        if (create_shader(GL_VERTEX_SHADER, "shaders/source.vs", &vertex_shader) != 0)
+        /* Attach shader source code to shader objects */
+        glShaderSource(vertex_shader, 1, (const GLchar**)&vs_src, NULL);
+        glShaderSource(fragment_shader, 1, &fs, NULL);
+
+        /* Compile shader & handle errors */
+        glCompileShader(vertex_shader);
+        glCompileShader(fragment_shader);
+
+        int success;
+        char info_log[512];
+        glGetShaderiv(vertex_shader, GL_COMPILE_STATUS, &success);
+        if (!success)
+        {
+                glGetShaderInfoLog(vertex_shader, 512, NULL, info_log);
+                log_err("could not compile vertex shader:\n%s", info_log);
                 return -1;
-        if (create_shader(GL_FRAGMENT_SHADER, "shaders/source.fs", &fragment_shader) != 0)
+        }
+        glGetShaderiv(fragment_shader, GL_COMPILE_STATUS, &success);
+        if (!success)
+        {
+                glGetShaderInfoLog(fragment_shader, 512, NULL, info_log);
+                log_err("could not compile fragment shader:\n%s", info_log);
                 return -1;
+        }
 
         // Shader Program
         // --------------
@@ -63,8 +118,6 @@ int init_renderer()
         glAttachShader(shader_program, vertex_shader);
         glAttachShader(shader_program, fragment_shader);
         glLinkProgram(shader_program);
-        int success;
-        char info_log[512];
         glGetProgramiv(shader_program, GL_LINK_STATUS, &success);
         if (!success)
         {
@@ -75,6 +128,7 @@ int init_renderer()
 
         glUseProgram(shader_program);
         glDeleteShader(vertex_shader);
+        free((void*)vs);
         glDeleteShader(fragment_shader);
 
         // Linking vertex attributes
@@ -82,54 +136,6 @@ int init_renderer()
 
         glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
         glEnableVertexAttribArray(0);
-        return 0;
-}
-
-int create_shader(GLenum shader_type, const char* shader_path, GLuint* shader_ptr)
-{
-        /* Find & copy vertex shader source */
-        FILE* shader_file = fopen(shader_path, "r");
-        char* shader_src = NULL;
-
-        if (shader_file == NULL)
-        {
-                if (shader_type == GL_VERTEX_SHADER)
-                        log_err("could not find vertex shader file");
-                else if (shader_type == GL_FRAGMENT_SHADER)
-                        log_err("could not find fragment shader file");
-                else
-                        log_err("could not find shader file");
-                return -1;
-        } else
-        {
-                fseek(shader_file, 0, SEEK_END);
-                int char_count = ftell(shader_file);
-
-                shader_src = (char*)malloc((char_count + 1) * sizeof(char));
-                if (shader_src)
-                {
-                        fseek(shader_file, 0, SEEK_SET);
-                        fread((void*)shader_src, sizeof(char), char_count, shader_file);
-                        shader_src[char_count] = '\0';
-                }
-                fclose(shader_file);
-        }
-
-        *shader_ptr = glCreateShader(shader_type);
-        glShaderSource(*shader_ptr, 1, (const GLchar**)&shader_src, NULL);
-        glCompileShader(*shader_ptr);
-        free(shader_src);
-
-        int success;
-        char info_log[512];
-        glGetShaderiv(*shader_ptr, GL_COMPILE_STATUS, &success);
-        if (!success)
-        {
-                glGetShaderInfoLog(*shader_ptr, 512, NULL, info_log);
-                log_err("could not compile vertex shader:\n%s", info_log);
-                return -1;
-        }
-
         return 0;
 }
 
