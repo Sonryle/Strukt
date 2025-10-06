@@ -7,6 +7,7 @@
 #include <client/window.h>
 
 GLFWwindow* window;
+GLFWmonitor* monitor;
 
 void framebuffer_size_callback(GLFWwindow* window, int width, int height);
 
@@ -21,13 +22,28 @@ int init_window(void)
         glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
         glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
-        window = glfwCreateWindow(
+        monitor = glfwGetPrimaryMonitor();
+        if (settings.window->fullscreen)
+        {
+            GLFWvidmode* mode = glfwGetVideoMode(monitor);
+            window = glfwCreateWindow(
+                    mode->width,
+                    mode->height,
+                    settings.window->title,
+                    monitor,
+                    NULL
+            );
+        }
+        else {
+
+            window = glfwCreateWindow(
                 settings.window->initial_width,
                 settings.window->initial_height,
                 settings.window->title,
                 NULL,
                 NULL
-        );
+            );
+        }
 
         if (window == NULL)
         {
@@ -42,6 +58,7 @@ int init_window(void)
 
 void terminate_window()
 {
+        glfwDestroyWindow(window);
         glfwTerminate();
 }
 

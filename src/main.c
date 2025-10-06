@@ -13,11 +13,6 @@ int main()
         if (setup_client_environment())
                 return -1;
 
-        log_debug("debug log test, %s", "Hello World");
-        log_info("info log test, %s", "Hello World");
-        log_err("error log test, %s", "Hello World");
-        log_warn("warning log test, %s", "Hello World");
-
         while(!glfwWindowShouldClose(window))
         {
                 render();
@@ -43,6 +38,7 @@ int setup_client_environment()
         if (init_renderer())
                 return -1;
 
+        log_info("Client Environment Successfully Initiated; Welcome To Strukt.");
         return 0;
 }
 

@@ -19,9 +19,9 @@ static struct WindowSettings window_settings = {
         .fullscreen = false,
 };
 static struct RendererSettings renderer_settings = {
-        .bgr = 0.52,
-        .bgg = 0.25,
-        .bgb = 0.75,
+        .bgr = 0.52f,
+        .bgg = 0.25f,
+        .bgb = 0.75f,
 };
 struct Settings settings = {
         .window = &window_settings,
