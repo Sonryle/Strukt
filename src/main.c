@@ -15,7 +15,7 @@ int main()
 
         while(!glfwWindowShouldClose(window))
         {
-                render();
+                temporary_render();
 
                 /* Poll for and process events */
                 glfwPollEvents();

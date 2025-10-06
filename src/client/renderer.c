@@ -1,4 +1,3 @@
-#include <stdio.h>
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
 
@@ -6,6 +5,33 @@
 #include <client/settings.h>
 #include <client/renderer.h>
 #include <client/window.h>
+
+const char* vs =
+        "#version 330 core\n"
+        "layout (location = 0) in vec3 aPos;\n"
+
+        "void main()\n"
+        "{\n"
+        "gl_Position = vec4(aPos.x, aPos.y, aPos.z, 1.0);\n"
+        "}\n";
+const char* fs =
+        "#version 330 core\n"
+        "out vec4 FragColor;\n"
+
+        "void main()\n"
+        "{\n"
+        "FragColor = vec4(1.0f, 0.5f, 0.2f, 1.0f);\n"
+        "}\n";
+float vertices[] = {
+    -0.5f, -0.5f, 0.0f,
+     0.5f, -0.5f, 0.0f,
+     0.0f,  0.5f, 0.0f
+};
+GLuint VBO;
+GLuint VAO;
+GLuint vertex_shader;
+GLuint fragment_shader;
+GLuint shader_program;
 
 int init_renderer()
 {
@@ -19,12 +45,89 @@ int init_renderer()
         glClearColor(settings.renderer->bgr, settings.renderer->bgg, settings.renderer->bgb, 1.0f);
         glViewport(0, 0, settings.window->initial_width, settings.window->initial_height);
 
+        // Create Buffers
+        // --------------
+
+        /* Generate a buffer to store our vertices */
+        glGenBuffers(1, &VBO);
+        glGenVertexArrays(1, &VAO);
+
+        /* Bind Vertex Array Buffer */
+        glBindVertexArray(VAO);
+
+        /* Bind buffer to GL_ARRAY_BUFFER buffer type */
+        glBindBuffer(GL_ARRAY_BUFFER, VBO);
+
+        /* Copy user-defined data into currently bound buffer of type GL_ARRAY_BUFFER */
+        glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), &vertices, GL_STATIC_DRAW);
+
+        // Create shaders
+        // --------------
+
+        /* Create shaders */
+        vertex_shader = glCreateShader(GL_VERTEX_SHADER);
+        fragment_shader = glCreateShader(GL_FRAGMENT_SHADER);
+        
+        /* Attach shader source code to shader objects */
+        glShaderSource(vertex_shader, 1, &vs, NULL);
+        glShaderSource(fragment_shader, 1, &fs, NULL);
+
+        /* Compile shader & handle errors */
+        glCompileShader(vertex_shader);
+        glCompileShader(fragment_shader);
+
+        int success;
+        char info_log[512];
+        glGetShaderiv(vertex_shader, GL_COMPILE_STATUS, &success);
+        if (!success)
+        {
+                glGetShaderInfoLog(vertex_shader, 512, NULL, info_log);
+                log_err("could not compile vertex shader:\n%s", info_log);
+                return -1;
+        }
+        glGetShaderiv(fragment_shader, GL_COMPILE_STATUS, &success);
+        if (!success)
+        {
+                glGetShaderInfoLog(fragment_shader, 512, NULL, info_log);
+                log_err("could not compile fragment shader:\n%s", info_log);
+                return -1;
+        }
+
+        // Shader Program
+        // --------------
+
+        shader_program = glCreateProgram();
+        glAttachShader(shader_program, vertex_shader);
+        glAttachShader(shader_program, fragment_shader);
+        glLinkProgram(shader_program);
+        glGetProgramiv(shader_program, GL_LINK_STATUS, &success);
+        if (!success)
+        {
+                glGetProgramInfoLog(shader_program, 512, NULL, info_log);
+                log_err("could not link shader program:\n%s", info_log);
+                return -1;
+        }
+
+        glUseProgram(shader_program);
+        glDeleteShader(vertex_shader);
+        glDeleteShader(fragment_shader);
+
+        // Linking vertex attributes
+        // -------------------------
+
+        glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
+        glEnableVertexAttribArray(0);
         return 0;
 }
 
-int render()
+int temporary_render()
 {
         glClear(GL_COLOR_BUFFER_BIT);
+
+        glUseProgram(shader_program);
+        glBindVertexArray(VAO);
+        glDrawArrays(GL_TRIANGLES, 0, 3);
+
         glfwSwapBuffers(window);
 
         return 0;

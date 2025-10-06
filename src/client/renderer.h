@@ -1,5 +1,5 @@
 #pragma once
 
 int init_renderer();
-int render();
+int temporary_render();
 void terminate_renderer();

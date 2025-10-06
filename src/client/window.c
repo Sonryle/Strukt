@@ -25,7 +25,7 @@ int init_window(void)
         monitor = glfwGetPrimaryMonitor();
         if (settings.window->fullscreen)
         {
-            GLFWvidmode* mode = glfwGetVideoMode(monitor);
+            const GLFWvidmode* mode = glfwGetVideoMode(monitor);
             window = glfwCreateWindow(
                     mode->width,
                     mode->height,
@@ -53,6 +53,7 @@ int init_window(void)
         }
 
         glfwMakeContextCurrent(window);
+        glfwSetWindowSizeCallback(window, framebuffer_size_callback);
         return 0;
 }
 
