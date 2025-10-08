@@ -1,17 +1,27 @@
 #include <stdarg.h>
+#include <stdlib.h>
 
 #include <client/logging.h>
 
 FILE* client_log;
 
-int init_client_log()
+int init_client_log(char* log_dir)
 {
-        client_log = fopen(LOG_FILENAME, "w"); 
+        // Create log path
+        char* log_path = calloc(1, sizeof(char) * (strlen(log_dir) + strlen(LOG_FILENAME) + 1));
+        strcat(log_path, log_dir);
+        strcat(log_path, LOG_FILENAME);
+        strcat(log_path, "");
+
+        log_info("log_path = %s", log_path);
+        client_log = fopen(log_path, "w"); 
         if (client_log == NULL)
         {
                 fprintf(stderr, "Client Error - fopen(\"%s\", \"wa\"); failed...", LOG_FILENAME);
                 return -1;
         }
+
+        free(log_path);
         return 0;
 }
 

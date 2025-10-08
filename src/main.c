@@ -27,7 +27,8 @@ int main()
 
 int setup_client_environment()
 {
-        if (init_client_log())
+        fetch_project_details();
+        if (init_client_log(project_data_dir))
         {
                 fprintf(stderr, "main.c - init_clientlog() returned error\n");
                 return -1;

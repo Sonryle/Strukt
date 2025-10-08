@@ -2,12 +2,10 @@
  * File operation functions
 */
 #pragma once
-#include <stdio.h>
 #include <stdbool.h>
-#include <string.h>
+#include <project_details.h>
 
-#include <strukt.h>
-
-const char* file_path_relative_to_project(const char* path);
-
+/* returns shortened path relative to project root. Eg "/home/me/Documents/PROJECT_NAME/src/main.c" -> "/PROJECT_NAME/src/main.c" */
+const char* truncate_path_to_project_root(const char* path);
+/* returns 1 if file exists */
 bool file_exists(const char* filename);
