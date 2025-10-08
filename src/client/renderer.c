@@ -18,9 +18,32 @@ float vertices[] = {
 GLuint VBO;
 GLuint VAO;
 GLuint shader_program;
+char* vertex_shader_path;
+char* fragment_shader_path;
 
-int init_renderer()
+int init_renderer(char* data_dir)
 {
+        /* Create Shader Paths */
+        vertex_shader_path = calloc(1, sizeof(char) * (strlen(data_dir) + strlen("shaders\\source.vs")));
+        fragment_shader_path = calloc(1, sizeof(char) * (strlen(data_dir) + strlen("shaders\\source.fs")));
+        if (vertex_shader_path != NULL)
+        {
+            strcat(vertex_shader_path, data_dir);
+            strcat(vertex_shader_path, "shaders\\source.vs");
+        }
+        else {
+            fprintf(stderr, "Client Error - calloc() failed");
+        }
+        if (fragment_shader_path != NULL)
+        {
+            strcat(fragment_shader_path, data_dir);
+            strcat(fragment_shader_path, "shaders\\source.fs");
+        }
+        else {
+            fprintf(stderr, "Client Error - calloc() failed");
+        }
+
+
         if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress))
         {
                 log_err("failed to initialize GLAD");
@@ -47,7 +70,9 @@ int init_renderer()
         /* Copy user-defined data into currently bound buffer of type GL_ARRAY_BUFFER */
         glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), &vertices, GL_STATIC_DRAW);
 
-        build_shader_program("shaders/source.vs", "shaders/source.fs", &shader_program);
+        log_info("vs_path = %s fs_path = %s", vertex_shader_path, fragment_shader_path);
+        if (build_shader_program(vertex_shader_path, fragment_shader_path, &shader_program) != 0)
+            return -1;
         glUseProgram(shader_program);
 
         // Linking vertex attributes
@@ -99,11 +124,7 @@ int create_shader(GLenum shader_type, const char* shader_path, GLuint* shader_pt
         if (shader_file == NULL)
         {
                 if (shader_type == GL_VERTEX_SHADER)
-                        log_err("could not find vertex shader file");
-                else if (shader_type == GL_FRAGMENT_SHADER)
-                        log_err("could not find fragment shader file");
-                else
-                        log_err("could not find shader file");
+                        log_err("could not find shader file at \"%s\"", shader_path);
                 return -1;
         }
         
@@ -125,6 +146,8 @@ int create_shader(GLenum shader_type, const char* shader_path, GLuint* shader_pt
         src[char_count] = '\0';
         fclose(shader_file);
 
+        log_info("shader source =\n%s", src);
+
         /* Create and compile shader */
         *shader_ptr = glCreateShader(shader_type);
         glShaderSource(*shader_ptr, 1, (const GLchar**)&src, NULL);
@@ -137,7 +160,7 @@ int create_shader(GLenum shader_type, const char* shader_path, GLuint* shader_pt
         if (!success)
         {
                 glGetShaderInfoLog(*shader_ptr, 512, NULL, info_log);
-                log_err("could not compile vertex shader:\n%s", info_log);
+                log_err("could not compile shader:\n%s", info_log);
                 return -1;
         }
 

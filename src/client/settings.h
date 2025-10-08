@@ -27,4 +27,4 @@ extern struct Settings {
         struct RendererSettings* renderer;
 } settings;
 
-int parse_client_settings();
+int parse_client_settings(char* settings_dir);

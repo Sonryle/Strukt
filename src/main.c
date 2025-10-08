@@ -33,10 +33,10 @@ int setup_client_environment()
                 fprintf(stderr, "main.c - init_clientlog() returned error\n");
                 return -1;
         }
-        parse_client_settings();
+        parse_client_settings(project_data_dir);
         if (init_window())
                 return -1;
-        if (init_renderer())
+        if (init_renderer(project_data_dir))
                 return -1;
 
         log_info("Client Environment Successfully Initiated; Welcome To Strukt.");

@@ -1,5 +1,6 @@
 #include <string.h>
 #include <stdio.h>
+#include <stdlib.h>
 
 #include <tomlc17.h>
 
@@ -7,7 +8,7 @@
 #include <client/settings.h>
 #include <client/logging.h>
 
-void create_default_client_settings_file();
+void create_default_client_settings_file(char* settings_dir);
 void parse_window_settings();
 void parse_renderer_settings();
 
@@ -30,15 +31,27 @@ struct Settings settings = {
 
 toml_result_t toml_output;
 
-int parse_client_settings()
+int parse_client_settings(char* settings_dir)
 {
-        if (!file_exists(CLIENT_SETTINGS_FILENAME))
-                create_default_client_settings_file();
+        /* Create Settings Path */
+        char* settings_path = calloc(1, sizeof(char) * (strlen(settings_dir) + strlen(CLIENT_SETTINGS_FILENAME) + 1));
+        if (settings_path != NULL)
+        {
+            strcat(settings_path, settings_dir);
+            strcat(settings_path, CLIENT_SETTINGS_FILENAME);
+            strcat(settings_path, "");
+        }
+        else {
+            fprintf(stderr, "Client Error - calloc() failed");
+        }
 
-        toml_output = toml_parse_file_ex(CLIENT_SETTINGS_FILENAME);
+        if (!file_exists(settings_path))
+                create_default_client_settings_file(settings_path);
+
+        toml_output = toml_parse_file_ex(settings_path);
         if (!toml_output.ok)
         {
-                log_err("unable to load \"%s\", Toml error \"%s\"", CLIENT_SETTINGS_FILENAME, toml_output.errmsg);
+                log_err("unable to load \"%s\", Toml error \"%s\"", settings_path, toml_output.errmsg);
                 return -1;
         }
 
@@ -46,13 +59,14 @@ int parse_client_settings()
         parse_renderer_settings();
 
         toml_free(toml_output);
+        free(settings_path);
 
         return 0;
 }
 
-void create_default_client_settings_file()
+void create_default_client_settings_file(char* settings_path)
 {
-        FILE* settings_file = fopen(CLIENT_SETTINGS_FILENAME, "w");
+        FILE* settings_file = fopen(settings_path, "w");
         if (settings_file == NULL)
                 log_err("unable to create default settings file");
 
