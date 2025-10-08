@@ -8,6 +8,7 @@
 #include <client/window.h>
 
 int create_shader(GLenum shader_type, const char* shader_path, GLuint* shader_ptr);
+int build_shader_program(const char* vs_path, const char* fs_path, GLuint* program_ptr);
 
 float vertices[] = {
     -0.5f, -0.5f, 0.0f,
@@ -16,8 +17,6 @@ float vertices[] = {
 };
 GLuint VBO;
 GLuint VAO;
-GLuint vertex_shader;
-GLuint fragment_shader;
 GLuint shader_program;
 
 int init_renderer()
@@ -48,40 +47,48 @@ int init_renderer()
         /* Copy user-defined data into currently bound buffer of type GL_ARRAY_BUFFER */
         glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), &vertices, GL_STATIC_DRAW);
 
-        // Create shaders
-        // --------------
-        
-        if (create_shader(GL_VERTEX_SHADER, "shaders/source.vs", &vertex_shader) != 0)
-                return -1;
-        if (create_shader(GL_FRAGMENT_SHADER, "shaders/source.fs", &fragment_shader) != 0)
-                return -1;
-
-        // Shader Program
-        // --------------
-
-        shader_program = glCreateProgram();
-        glAttachShader(shader_program, vertex_shader);
-        glAttachShader(shader_program, fragment_shader);
-        glLinkProgram(shader_program);
-        int success;
-        char info_log[512];
-        glGetProgramiv(shader_program, GL_LINK_STATUS, &success);
-        if (!success)
-        {
-                glGetProgramInfoLog(shader_program, 512, NULL, info_log);
-                log_err("could not link shader program:\n%s", info_log);
-                return -1;
-        }
-
+        build_shader_program("shaders/source.vs", "shaders/source.fs", &shader_program);
         glUseProgram(shader_program);
-        glDeleteShader(vertex_shader);
-        glDeleteShader(fragment_shader);
 
         // Linking vertex attributes
         // -------------------------
 
         glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
         glEnableVertexAttribArray(0);
+        return 0;
+}
+
+int build_shader_program(const char* vs_path, const char* fs_path, GLuint* program_ptr)
+{
+        GLuint vertex_shader;
+        GLuint fragment_shader;
+        if (create_shader(GL_VERTEX_SHADER, vs_path, &vertex_shader) != 0)
+        {
+                log_err("could not build shader program");
+                return -1;
+        }
+        if (create_shader(GL_FRAGMENT_SHADER, fs_path, &fragment_shader) != 0)
+        {
+                log_err("could not build shader program");
+                return -1;
+        }
+
+        *program_ptr = glCreateProgram();
+        glAttachShader(*program_ptr, vertex_shader);
+        glAttachShader(*program_ptr, fragment_shader);
+        glLinkProgram(*program_ptr);
+        int success;
+        char info_log[512];
+        glGetProgramiv(*program_ptr, GL_LINK_STATUS, &success);
+        if (!success)
+        {
+                glGetProgramInfoLog(*program_ptr, 512, NULL, info_log);
+                log_err("could not link shader program:\n%s", info_log);
+                return -1;
+        }
+        glDeleteShader(vertex_shader);
+        glDeleteShader(fragment_shader);
+
         return 0;
 }
 
