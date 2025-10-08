@@ -7,3 +7,4 @@
 extern char* project_data_dir;
 
 int fetch_project_details();
+void terminate_project_details();

@@ -7,17 +7,23 @@ FILE* client_log;
 
 int init_client_log(char* log_dir)
 {
-        // Create log path
+        /* Create Log Path */
         char* log_path = calloc(1, sizeof(char) * (strlen(log_dir) + strlen(LOG_FILENAME) + 1));
-        strcat(log_path, log_dir);
-        strcat(log_path, LOG_FILENAME);
-        strcat(log_path, "");
+        if (log_path != NULL)
+        {
+                strcat(log_path, log_dir);
+                strcat(log_path, LOG_FILENAME);
+                strcat(log_path, "");
+        }
+        else {
+            fprintf(stderr, "Client Error - calloc() failed");
+        }
 
-        log_info("log_path = %s", log_path);
+        /* Open Log File */
         client_log = fopen(log_path, "w"); 
         if (client_log == NULL)
         {
-                fprintf(stderr, "Client Error - fopen(\"%s\", \"wa\"); failed...", LOG_FILENAME);
+                fprintf(stderr, "Client Error - fopen(%s, \"wa\")", log_path);
                 return -1;
         }
 

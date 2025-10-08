@@ -45,6 +45,7 @@ int setup_client_environment()
 
 void terminate_client()
 {
+        terminate_project_details();
         terminate_window();
         terminate_renderer();
         terminate_client_log();
