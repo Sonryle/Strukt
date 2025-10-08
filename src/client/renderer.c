@@ -94,10 +94,8 @@ int build_shader_program(const char* vs_path, const char* fs_path, GLuint* progr
 
 int create_shader(GLenum shader_type, const char* shader_path, GLuint* shader_ptr)
 {
-        /* Find & copy vertex shader source */
+        /* Open vertex shader source file */
         FILE* shader_file = fopen(shader_path, "r");
-        char* shader_src = NULL;
-
         if (shader_file == NULL)
         {
                 if (shader_type == GL_VERTEX_SHADER)
@@ -107,25 +105,31 @@ int create_shader(GLenum shader_type, const char* shader_path, GLuint* shader_pt
                 else
                         log_err("could not find shader file");
                 return -1;
-        } else
-        {
-                fseek(shader_file, 0, SEEK_END);
-                int char_count = ftell(shader_file);
+        }
+        
+        /* Copy vertex shader source file into string */
+        char* src;
+        fseek(shader_file, 0, SEEK_END);
+        int char_count = ftell(shader_file);
 
-                shader_src = (char*)malloc((char_count + 1) * sizeof(char));
-                if (shader_src)
-                {
-                        fseek(shader_file, 0, SEEK_SET);
-                        fread((void*)shader_src, sizeof(char), char_count, shader_file);
-                        shader_src[char_count] = '\0';
-                }
+        src = (char*)malloc(sizeof(char) * (char_count + 1));
+        if (src == NULL)
+        {
                 fclose(shader_file);
+                log_err("malloc failed");
+                return -1;
         }
 
+        fseek(shader_file, 0, SEEK_SET);
+        fread((void*)src, sizeof(char), char_count, shader_file);
+        src[char_count] = '\0';
+        fclose(shader_file);
+
+        /* Create and compile shader */
         *shader_ptr = glCreateShader(shader_type);
-        glShaderSource(*shader_ptr, 1, (const GLchar**)&shader_src, NULL);
+        glShaderSource(*shader_ptr, 1, (const GLchar**)&src, NULL);
         glCompileShader(*shader_ptr);
-        free(shader_src);
+        free(src);
 
         int success;
         char info_log[512];
