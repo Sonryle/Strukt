@@ -18,6 +18,7 @@ add_subdirectory(dependencies)
 target_link_libraries(strukt PRIVATE glad)
 target_link_libraries(strukt PRIVATE glfw)
 target_link_libraries(strukt PRIVATE tomlc17)
+target_link_libraries(strukt PRIVATE cwalk)
 
 # Set our project as the Visual Studio startup project
 set_property(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR} PROPERTY VS_STARTUP_PROJECT ${CMAKE_PROJECT_NAME})

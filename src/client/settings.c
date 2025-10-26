@@ -4,7 +4,6 @@
 
 #include <tomlc17.h>
 
-#include <file_operations.h>
 #include <client/settings.h>
 #include <client/logging.h>
 
@@ -31,21 +30,9 @@ struct Settings settings = {
 
 toml_result_t toml_output;
 
-int parse_client_settings(char* settings_dir)
+int parse_client_settings(char* settings_path)
 {
-        /* Create Settings Path */
-        char* settings_path = calloc(1, sizeof(char) * (strlen(settings_dir) + strlen(CLIENT_SETTINGS_FILENAME) + 1));
-        if (settings_path != NULL)
-        {
-            strcat(settings_path, settings_dir);
-            strcat(settings_path, CLIENT_SETTINGS_FILENAME);
-            strcat(settings_path, "");
-        }
-        else {
-            fprintf(stderr, "Client Error - calloc() failed");
-        }
-
-        if (!file_exists(settings_path))
+        if (fopen(settings_path, "r") == NULL)
                 create_default_client_settings_file(settings_path);
 
         toml_output = toml_parse_file_ex(settings_path);
@@ -59,16 +46,16 @@ int parse_client_settings(char* settings_dir)
         parse_renderer_settings();
 
         toml_free(toml_output);
-        free(settings_path);
-
         return 0;
 }
 
 void create_default_client_settings_file(char* settings_path)
 {
         FILE* settings_file = fopen(settings_path, "w");
-        if (settings_file == NULL)
+        if (settings_file == NULL) {
                 log_err("unable to create default settings file");
+                return;
+        }
 
         /* Add window settings to file */
         fprintf(settings_file, "[window]\n");
@@ -97,16 +84,16 @@ void parse_window_settings()
 
         /* Copy values into settings struct */
         if (title.type == TOML_STRING) settings.window->title = strdup(title.u.s);
-        else log_warn("missing or invalid window.title property in %s", CLIENT_SETTINGS_FILENAME);
+        else log_warn("missing or invalid window.title property in client settings");
 
         if (initial_width.type == TOML_INT64) settings.window->initial_width = (int)initial_width.u.int64;
-        else log_warn("missing or invalid window.initial_width property in %s", CLIENT_SETTINGS_FILENAME);
+        else log_warn("missing or invalid window.title property in client settings");
 
         if (initial_height.type == TOML_INT64) settings.window->initial_height = (int)initial_height.u.int64;
-        else log_warn("missing or invalid window.initial_width property in %s", CLIENT_SETTINGS_FILENAME);
+        else log_warn("missing or invalid window.title property in client settings");
 
         if (fullscreen.type == TOML_BOOLEAN) settings.window->fullscreen = fullscreen.u.boolean;
-        else log_warn("missing or invalid window.fullscreen property in %s", CLIENT_SETTINGS_FILENAME);
+        else log_warn("missing or invalid window.title property in client settings");
 }
 
 void parse_renderer_settings()
@@ -118,11 +105,16 @@ void parse_renderer_settings()
 
         /* Copy values into settings struct */
         if (bgr.type == TOML_FP64) settings.renderer->bgr = (float)bgr.u.fp64;
-        else log_warn("settings.c - missing or invalid renderer.bgr property in %s", CLIENT_SETTINGS_FILENAME);
+        else log_warn("missing or invalid window.title property in client settings");
 
         if (bgg.type == TOML_FP64) settings.renderer->bgg = (float)bgg.u.fp64;
-        else log_warn("settings.c - missing or invalid renderer.bgg property in %s", CLIENT_SETTINGS_FILENAME);
+        else log_warn("missing or invalid window.title property in client settings");
 
         if (bgb.type == TOML_FP64) settings.renderer->bgb = (float)bgb.u.fp64;
-        else log_warn("settings.c - missing or invalid renderer.bgb property in %s", CLIENT_SETTINGS_FILENAME);
+        else log_warn("missing or invalid window.title property in client settings");
+}
+
+void terminate_settings()
+{
+    return;
 }

@@ -1,65 +1,62 @@
+#include "logging.h"
 #include <stdarg.h>
-#include <stdlib.h>
+#include <stdio.h>
 
-#include <client/logging.h>
+static FILE* log_file = NULL;
+static LogLevel current_log_level = LOG_INFO;
 
-FILE* client_log;
-
-int init_client_log(char* log_dir)
+inline const char* log_level_to_string(LogLevel level)
 {
-        /* Create Log Path */
-        char* log_path = calloc(1, sizeof(char) * (strlen(log_dir) + strlen(LOG_FILENAME) + 1));
-        if (log_path != NULL)
-        {
-                strcat(log_path, log_dir);
-                strcat(log_path, LOG_FILENAME);
-                strcat(log_path, "");
-        }
-        else {
-            fprintf(stderr, "Client Error - calloc() failed");
-        }
+    switch (level) {
+    case LOG_DEBUG:     return "DEBUG";
+    case LOG_INFO:      return "INFO";
+    case LOG_WARNING:   return "WARNING";
+    case LOG_ERROR:     return "ERROR";
+    default:            return "UNKNOWN";
+    }
+}
+
+int init_logger(char* log_path)
+{
+        if (log_file != NULL)
+            return -1;
 
         /* Open Log File */
-        client_log = fopen(log_path, "w"); 
-        if (client_log == NULL)
-        {
-                fprintf(stderr, "Client Error - fopen(%s, \"wa\")", log_path);
+        log_file = fopen(log_path, "w");
+        if (log_file == NULL) {
+                fprintf(stderr, "Client Error - fopen(\"%s\", \"w\")\n", log_path);
                 return -1;
         }
 
-        free(log_path);
         return 0;
 }
 
-void log_message(const char* level, const char* func, const char* file, const int line, const char* str, ...)
+void set_log_level(LogLevel level)
 {
-        va_list list;
-        va_start(list, str);
-
-#ifdef _DEBUG
-        va_list copy;
-        va_copy(copy, list);
-
-        fprintf(stdout, "%s : %s:%d: In function '%s': ", level, file, line, func);
-        vfprintf(stdout, str, copy);
-        fprintf(stdout, "\n");
-
-        va_end(copy);
-#endif
-
-        if (client_log)
-        {
-                fprintf(client_log, "%s : %s:%d: In function '%s': ", level, file, line, func);
-                vfprintf(client_log, str, list);
-                fprintf(client_log, "\n");
-                fflush(client_log);     // logs are flushed immediately, instead of waiting for file to close
-        }
-
-        va_end(list);
+    current_log_level = level;
 }
 
-void terminate_client_log()
+void log_message(LogLevel level, const char* fmt, ...)
 {
-        if (client_log)
-                fclose(client_log);
+    if (level < current_log_level)
+        return;
+
+    if (log_file) {
+        fprintf(log_file, "%s : ", log_level_to_string(level));
+
+        va_list list;
+        va_start(list, fmt);
+        vfprintf(log_file, fmt, list);
+        va_end(list);
+
+        fprintf(log_file, "\n");
+        fflush(log_file);
+    }
+}
+
+void terminate_logger()
+{
+    if (log_file)
+        fclose(log_file);
+    log_file = NULL;
 }

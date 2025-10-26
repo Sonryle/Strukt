@@ -18,32 +18,9 @@ float vertices[] = {
 GLuint VBO;
 GLuint VAO;
 GLuint shader_program;
-char* vertex_shader_path;
-char* fragment_shader_path;
 
-int init_renderer(char* data_dir)
+int init_renderer(const char* vshader_path, const char* fshader_path)
 {
-        /* Create Shader Paths */
-        vertex_shader_path = calloc(1, sizeof(char) * (strlen(data_dir) + strlen("shaders\\source.vs")));
-        fragment_shader_path = calloc(1, sizeof(char) * (strlen(data_dir) + strlen("shaders\\source.fs")));
-        if (vertex_shader_path != NULL)
-        {
-            strcat(vertex_shader_path, data_dir);
-            strcat(vertex_shader_path, "shaders\\source.vs");
-        }
-        else {
-            fprintf(stderr, "Client Error - calloc() failed");
-        }
-        if (fragment_shader_path != NULL)
-        {
-            strcat(fragment_shader_path, data_dir);
-            strcat(fragment_shader_path, "shaders\\source.fs");
-        }
-        else {
-            fprintf(stderr, "Client Error - calloc() failed");
-        }
-
-
         if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress))
         {
                 log_err("failed to initialize GLAD");
@@ -70,8 +47,8 @@ int init_renderer(char* data_dir)
         /* Copy user-defined data into currently bound buffer of type GL_ARRAY_BUFFER */
         glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), &vertices, GL_STATIC_DRAW);
 
-        log_info("vs_path = %s fs_path = %s", vertex_shader_path, fragment_shader_path);
-        if (build_shader_program(vertex_shader_path, fragment_shader_path, &shader_program) != 0)
+        log_info("vs_path = %s fs_path = %s", vshader_path, fshader_path);
+        if (build_shader_program(vshader_path, fshader_path, &shader_program) != 0)
             return -1;
         glUseProgram(shader_program);
 

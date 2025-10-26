@@ -3,7 +3,6 @@
  * from client settings file into global settings structure.
 */
 #pragma once
-#define CLIENT_SETTINGS_FILENAME "client_settings.toml"
 #include <tomlc17.h>
 
 extern toml_result_t toml_output;
@@ -27,4 +26,5 @@ extern struct Settings {
         struct RendererSettings* renderer;
 } settings;
 
-int parse_client_settings(char* settings_dir);
+int parse_client_settings(char* settings_path);
+void terminate_settings();
