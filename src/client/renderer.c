@@ -2,7 +2,8 @@
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
 
-#include <client/logging.h>
+#include <main.h>
+#include <client/client.h>
 #include <client/settings.h>
 #include <client/renderer.h>
 #include <client/window.h>

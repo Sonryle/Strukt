@@ -4,8 +4,9 @@
 
 #include <tomlc17.h>
 
+#include <main.h>
+#include <client/client.h>
 #include <client/settings.h>
-#include <client/logging.h>
 
 void create_default_client_settings_file(char* settings_dir);
 void parse_window_settings();
