@@ -1,8 +1,7 @@
 #include <stdlib.h>
-#include <stdio.h>
+
 #include <errno.h>
 
-#include <GLFW/glfw3.h>
 #include <cwalk.h>
 
 #include <main.h>
@@ -11,29 +10,23 @@
 #include <client/window.h>
 #include <client/renderer.h>
 
-int setup_paths();
-int init_subsystems();
-void terminate_subsystems();
+int init_app_context(struct AppContext* ctx);
+int setup_project_root_path(struct AppPaths* paths);
+int join_path(const char* path_name, const char* path1, const char* path2, const char* dest, int dest_size);
+int setup_client_paths(struct AppPaths* paths);
+int setup_server_paths(struct AppPaths* paths);
+int init_subsystems(struct AppContext* ctx);
+void terminate_app_context(struct AppContext* ctx);
+void terminate_subsystems(struct AppContext* ctx);
 
-static char project_root_path[FILENAME_MAX];
-
-static char client_shaders_path[FILENAME_MAX];
-static char client_vshader_path[FILENAME_MAX];
-static char client_fshader_path[FILENAME_MAX];
-static char client_log_path[FILENAME_MAX];
-static char client_settings_path[FILENAME_MAX];
-
-static char server_log_path[FILENAME_MAX];
-
-int client_log_index;
-int server_log_index;
+struct AppContext app_context = { 0 };
 
 int main()
 {
-    if (setup_paths() != 0)
+    if (init_app_context(&app_context) != 0) {
+        fprintf(stderr, "could not initiate app context\n");
         return -1;
-    if (init_subsystems() != 0)
-        return -1;
+    }
 
     while (!glfwWindowShouldClose(window))
     {
@@ -43,11 +36,32 @@ int main()
         glfwPollEvents();
     }
 
-    terminate_subsystems();
+    terminate_app_context(&app_context);
     return 0;
 }
 
-int setup_paths()
+int init_app_context(struct AppContext* ctx)
+{
+    if (setup_project_root_path(&ctx->paths) != 0) {
+        fprintf(stderr, "idk\n");
+        return -1;
+    }
+    if (setup_client_paths(&ctx->paths) != 0) {
+        fprintf(stderr, "could not set up client paths for app context\n");
+        return -1;
+    }
+    if (setup_server_paths(&ctx->paths) != 0) {
+        fprintf(stderr, "could not set up server paths for app context\n");
+        return -1;
+    }
+    if (init_subsystems(ctx) != 0) {
+        fprintf(stderr, "Could not initialise subsystems for app context\n");
+        return -1;
+    }
+    return 0;
+}
+
+int setup_project_root_path(struct AppPaths* paths) 
 {
     // Get path to users home directory
 #if defined (_WIN32)
@@ -62,99 +76,88 @@ int setup_paths()
 
     // Create environment directories
 #if defined (_WIN32)
-    size_t size = cwk_path_join(home, PROJECT_NAME, project_root_path, sizeof(project_root_path));
+    size_t size = cwk_path_join(home, PROJECT_NAME, paths->project_root_path, sizeof(paths->project_root_path));
 #else
-    size_t size = cwk_path_join(home, ".local/share/"PROJECT_NAME, project_root_path, sizeof(project_root_path));
+    size_t size = cwk_path_join(home, ".local/share/"PROJECT_NAME, paths->project_root_path, sizeof(paths->project_root_path));
 #endif
-    if (size >= sizeof(project_root_path)) {
-        fprintf(stderr, "%s home path too long (max %zu): %s\n", PROJECT_NAME, sizeof(project_root_path), project_root_path);
+    if (size >= sizeof(paths->project_root_path)) {
+        fprintf(stderr, "%s home path too long (max %zu): %s\n", PROJECT_NAME, sizeof(paths->project_root_path), paths->project_root_path);
         return -1;
     }
-    if (MKDIR(project_root_path) != 0 && errno != EEXIST) {
-        fprintf(stderr, "cannot create directory \"%s\": mkdir failed\n", project_root_path);
-        return -1;
-    }
-
-    size = cwk_path_join(project_root_path, CLIENT_SHADERS_DIRNAME, client_shaders_path, sizeof(client_shaders_path));
-    if (size >= sizeof(client_shaders_path)) {
-        fprintf(stderr, "vertex shader path too long (max %zu): %s\n", sizeof(client_vshader_path), client_vshader_path);
-        return -1;
-    }
-    if (MKDIR(client_shaders_path) != 0 && errno != EEXIST) {
-        fprintf(stderr, "cannot create directory \"%s\": mkdir failed\n", client_shaders_path);
-        return -1;
-    }
-
-    // Create global environment paths for client
-    size = cwk_path_join(client_shaders_path, CLIENT_VSHADER_FILENAME, client_vshader_path, sizeof(client_vshader_path));
-    if (size >= sizeof(client_vshader_path)) {
-        fprintf(stderr, "shaders path too long (max %zu): %s\n", sizeof(client_vshader_path), client_vshader_path);
-        return -1;
-    }
-
-    size = cwk_path_join(client_shaders_path, CLIENT_FSHADER_FILENAME, client_fshader_path, sizeof(client_fshader_path));
-    if (size >= sizeof(client_fshader_path)) {
-        fprintf(stderr, "fragment shader path too long (max %zu): %s\n", sizeof(client_fshader_path), client_fshader_path);
-        return -1;
-    }
-
-    size = cwk_path_join(project_root_path, CLIENT_LOG_FILENAME, client_log_path, sizeof(client_log_path));
-    if (size >= sizeof(client_log_path)) {
-        fprintf(stderr, "client log path too long (max %zu): %s\n", sizeof(client_log_path), client_log_path);
-        return -1;
-    }
-
-    size = cwk_path_join(project_root_path, CLIENT_SETTINGS_FILENAME, client_settings_path, sizeof(client_settings_path));
-    if (size >= sizeof(client_settings_path)) {
-        fprintf(stderr, "client settings path too long (max %zu): %s\n", sizeof(client_settings_path), client_settings_path);
-        return -1;
-    }
-
-    // Create global environment paths for server
-    size = cwk_path_join(project_root_path, SERVER_LOG_FILENAME, server_log_path, sizeof(server_log_path));
-    if (size >= sizeof(server_log_path)) {
-        fprintf(stderr, "server log path too long (max %zu): %s\n", sizeof(server_log_path), server_log_path);
+    if (MKDIR(paths->project_root_path) != 0 && errno != EEXIST) {
+        fprintf(stderr, "cannot create directory \"%s\": mkdir failed\n", paths->project_root_path);
         return -1;
     }
 
     return 0;
 }
 
-int init_subsystems()
+int join_path(const char* path_name, const char* path1, const char* path2, const char* dest, int dest_size)
+{
+    int size = cwk_path_join(path1, path2, dest, dest_size);
+    if (size >= dest_size) {
+        fprintf(stderr, "%s path too long (max %zu). Truncated path: %s\n", path_name, dest_size, dest);
+        return -1;
+    }
+}
+
+int setup_client_paths(struct AppPaths* paths)
+{
+    join_path("shaders",        paths->project_root_path,   CLIENT_SHADERS_DIRNAME,     paths->client_shaders_path, sizeof(paths->client_shaders_path));
+    join_path("vertex shader",  paths->client_shaders_path, CLIENT_VSHADER_FILENAME,    paths->client_vshader_path, sizeof(paths->client_vshader_path));
+    join_path("fragment shader",paths->client_shaders_path, CLIENT_FSHADER_FILENAME,    paths->client_fshader_path, sizeof(paths->client_fshader_path));
+    join_path("client log",     paths->project_root_path,   CLIENT_LOG_FILENAME,        paths->client_log_path,     sizeof(paths->client_log_path));
+    join_path("client settings",paths->project_root_path,   CLIENT_SETTINGS_FILENAME,   paths->client_settings_path,sizeof(paths->client_settings_path));
+    if (MKDIR(paths->client_shaders_path) != 0 && errno != EEXIST) {
+        fprintf(stderr, "cannot create directory \"%s\": mkdir failed\n", paths->client_shaders_path);
+        return -1;
+    }
+    return 0;
+}
+
+int setup_server_paths(struct AppPaths* paths)
+{
+    join_path("server log", paths->project_root_path, SERVER_LOG_FILENAME, paths->server_log_path, sizeof(paths->server_log_path));
+    return 0;
+}
+
+int init_subsystems(struct AppContext* ctx)
 {
     // Initialise client environment
-    if ((client_log_index = logger_add_log(client_log_path)) < 0) {
-        fprintf(stderr, "Could not create client log\n");
+    if (init_logger(&ctx->client_logger, ctx->paths.client_log_path) != 0) {
+        fprintf(stderr, "Could not create client logger\n");
         goto cleanup_client_log;
     }
     else {
-        logger_log_message(client_log_index, LOG_INFO, "Welcome To The Client Log Of\n%s", PROJECT_NAME_ASCII_ART);
+        logger_log_message(&ctx->client_logger, LOG_INFO, "Welcome To The Client Log Of\n%s", PROJECT_NAME_ASCII_ART);
     }
 
-    if (parse_client_settings(client_settings_path) != 0) {
-        logger_log_message(client_log_index, LOG_ERROR, "Could not initialise client settings");
+    if (parse_client_settings(ctx->paths.client_settings_path) != 0) {
+        logger_log_message(&ctx->client_logger, LOG_ERROR, "Could not initialise client settings");
         goto cleanup_client_settings;
     }
     if (init_window() != 0) {
-        logger_log_message(client_log_index, LOG_ERROR, "Could not initialise window");
+        logger_log_message(&ctx->client_logger, LOG_ERROR, "Could not initialise window");
         goto cleanup_client_window;
     }
-    if (init_renderer(client_vshader_path, client_fshader_path) != 0) {
-        logger_log_message(client_log_index, LOG_ERROR, "Could not initialise renderer");
+    if (init_renderer(ctx->paths.client_vshader_path, ctx->paths.client_fshader_path) != 0) {
+        logger_log_message(&ctx->client_logger, LOG_ERROR, "Could not initialise renderer");
         goto cleanup_client_renderer;
     }
 
     // Initialise server environment
-    if ((server_log_index = logger_add_log(server_log_path)) < 0) {
-        fprintf(stderr, "Could not create server log\n");
+    if (init_logger(&ctx->server_logger, ctx->paths.server_log_path) != 0) {
+        fprintf(stderr, "Could not create server logger\n");
         goto cleanup_server_log;
     }
     else {
-        logger_log_message(server_log_index, LOG_INFO, "Welcome To The Server Log Of\n%s", PROJECT_NAME_ASCII_ART);
+        logger_log_message(&ctx->server_logger, LOG_INFO, "Welcome To The Server Log Of\n%s", PROJECT_NAME_ASCII_ART);
     }
 
     return 0;
 
+cleanup_all:
+    terminate_logger(&ctx->server_logger);
 cleanup_server_log:
     terminate_renderer();
 cleanup_client_renderer:
@@ -162,15 +165,22 @@ cleanup_client_renderer:
 cleanup_client_window:
     terminate_settings();
 cleanup_client_settings:
-    terminate_logger();
+    terminate_logger(&ctx->client_logger);
 cleanup_client_log:
     return -1;
 }
 
-void terminate_subsystems()
+void terminate_app_context(struct AppContext* ctx)
+{
+    terminate_subsystems(ctx);
+    return;
+}
+
+void terminate_subsystems(struct AppContext* ctx)
 {
     terminate_renderer();
     terminate_window();
     terminate_settings();
-    terminate_logger();
+    terminate_logger(&ctx->client_logger);
+    terminate_logger(&ctx->server_logger);
 }

@@ -1,4 +1,7 @@
 #pragma once
+#include <stdio.h>
+
+#include <GLFW/glfw3.h>
 
 #include <logger.h>
 
@@ -30,5 +33,28 @@
 
 #define SERVER_LOG_FILENAME "server_log.txt"
 
-extern int client_log_index;
-extern int server_log_index;
+struct AppPaths {
+	char project_root_path[FILENAME_MAX];
+
+	char client_shaders_path[FILENAME_MAX];
+	char client_vshader_path[FILENAME_MAX];
+	char client_fshader_path[FILENAME_MAX];
+	char client_log_path[FILENAME_MAX];
+	char client_settings_path[FILENAME_MAX];
+
+	char server_log_path[FILENAME_MAX];
+};
+
+struct AppLogs {
+	int client_log_index;
+	int server_log_index;
+};
+
+struct AppContext {
+	struct AppPaths paths;
+	struct Logger client_logger;
+	struct Logger server_logger;
+	GLFWwindow* window;
+};
+
+extern struct AppContext app_context;

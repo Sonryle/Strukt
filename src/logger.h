@@ -10,9 +10,13 @@ typedef enum {
 	LOG_ERROR,
 } LogLevel;
 
-int logger_add_log(const char* log_path);
-int logger_remove_log(int log_index);
-void logger_set_log_level(int log_index, LogLevel level);
+struct Logger {
+	FILE* fp;
+	LogLevel log_level;
+};
+
+int init_logger(struct Logger* logger, const char* log_path);
+void logger_set_log_level(struct Logger* logger, LogLevel level);
 const char* log_level_to_string(LogLevel level);
-void logger_log_message(int log_index, LogLevel level, const char* fmt, ...);
-void terminate_logger();
+void logger_log_message(struct Logger* logger, LogLevel level, const char* fmt, ...);
+void terminate_logger(struct Logger* logger);
