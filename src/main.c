@@ -69,7 +69,11 @@ int setup_paths()
     }
 
     // Create environment directories
+#if defined (_WIN32)
     size_t size = cwk_path_join(home, PROJECT_NAME, project_root_path, sizeof(project_root_path));
+#else
+    size_t size = cwk_path_join(home, ".local/share/"PROJECT_NAME, project_root_path, sizeof(project_root_path));
+#endif
     if (size >= sizeof(project_root_path)) {
         fprintf(stderr, "%s home path too long (max %zu): %s\n", PROJECT_NAME, sizeof(project_root_path), project_root_path);
         return -1;
@@ -90,9 +94,9 @@ int setup_paths()
     }
 
     // Create global environment paths
-    size = cwk_path_join(client_shaders_path, CLIENT_VSHADER_FILENAME, client_shaders_path, sizeof(client_shaders_path));
-    if (size >= sizeof(client_shaders_path)) {
-        fprintf(stderr, "shaders path too long (max %zu): %s\n", sizeof(client_shaders_path), client_shaders_path);
+    size = cwk_path_join(client_shaders_path, CLIENT_VSHADER_FILENAME, client_vshader_path, sizeof(client_vshader_path));
+    if (size >= sizeof(client_vshader_path)) {
+        fprintf(stderr, "shaders path too long (max %zu): %s\n", sizeof(client_vshader_path), client_vshader_path);
         return -1;
     }
 
