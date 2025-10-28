@@ -1,5 +1,4 @@
 #include <stdlib.h>
-
 #include <errno.h>
 
 #include <cwalk.h>
@@ -17,18 +16,19 @@ int setup_paths(struct AppPaths* paths);
 int init_subsystems(struct AppContext* ctx);
 void terminate_app_context(struct AppContext* ctx);
 
-struct AppContext app_context = { 0 };
 
 int main()
 {
+    struct AppContext app_context = { 0 };
+
     if (init_app_context(&app_context) != 0) {
         fprintf(stderr, "could not initiate app context\n");
         return -1;
     }
 
-    while (!glfwWindowShouldClose(app_context.window))
+    while (!glfwWindowShouldClose(app_context.graphics.window))
     {
-        temporary_render(&app_context.VAO, &app_context.shader_program, app_context.window);
+        temporary_render(&app_context.graphics.VAO, &app_context.graphics.shader_program, app_context.graphics.window);
 
         /* Poll for and process events */
         glfwPollEvents();
@@ -97,57 +97,47 @@ int setup_paths(struct AppPaths* paths)
 
 int init_subsystems(struct AppContext* ctx)
 {
-    // Initialise client environment
-    if (init_logger(&ctx->client_logger, ctx->paths.client_log_path) != 0) {
-        fprintf(stderr, "Could not create client logger\n");
-        goto cleanup_client_log;
+    // Initialies global environment
+    if (init_logger(ctx->paths.client_log_path, ctx->paths.server_log_path) != 0) {
+        fprintf(stderr, "Could not initialise logger\n");
+        goto cleanup_logger;
     }
     else {
-        logger_log_message(&ctx->client_logger, LOG_INFO, "Welcome To The Client Log Of\n%s", PROJECT_NAME_ASCII_ART5);
+        logger_log_message(CLIENT_LOG, LOG_INFO, "Welcome To The Client Log Of\n%s", PROJECT_NAME_ASCII_ART5);
     }
+    // Initialise client environment
 
     if (parse_client_settings(ctx->paths.client_settings_path) != 0) {
-        logger_log_message(&ctx->client_logger, LOG_ERROR, "Could not initialise client settings");
+        logger_log_message(CLIENT_LOG, LOG_ERROR, "Could not initialise client settings");
         goto cleanup_client_settings;
     }
-    if (init_window(&ctx->window) != 0) {
-        logger_log_message(&ctx->client_logger, LOG_ERROR, "Could not initialise window");
+    if (init_window(&ctx->graphics.window) != 0) {
+        logger_log_message(CLIENT_LOG, LOG_ERROR, "Could not initialise window");
         goto cleanup_client_window;
     }
-    if (init_renderer(&ctx->VBO, &ctx->VAO, &ctx->shader_program, ctx->paths.client_vshader_path, ctx->paths.client_fshader_path) != 0) {
-        logger_log_message(&ctx->client_logger, LOG_ERROR, "Could not initialise renderer");
+    if (init_renderer(&ctx->graphics.VBO, &ctx->graphics.VAO, &ctx->graphics.shader_program, ctx->paths.client_vshader_path, ctx->paths.client_fshader_path) != 0) {
+        logger_log_message(CLIENT_LOG, LOG_ERROR, "Could not initialise renderer");
         goto cleanup_client_renderer;
     }
     // Initialise server environment
-    if (init_logger(&ctx->server_logger, ctx->paths.server_log_path) != 0) {
-        fprintf(stderr, "Could not create server logger\n");
-        goto cleanup_server_log;
-    }
-    else {
-        logger_log_message(&ctx->server_logger, LOG_INFO, "Welcome To The Server Log Of\n%s", PROJECT_NAME_ASCII_ART2);
-    }
 
     return 0;
 
-cleanup_all:
-    terminate_logger(&ctx->server_logger);
-cleanup_server_log:
-    terminate_renderer(&ctx->shader_program);
+    terminate_renderer(&ctx->graphics.shader_program);
 cleanup_client_renderer:
-    terminate_window(ctx->window);
+    terminate_window(ctx->graphics.window);
 cleanup_client_window:
     terminate_settings();
 cleanup_client_settings:
-    terminate_logger(&ctx->client_logger);
-cleanup_client_log:
+    terminate_logger();
+cleanup_logger:
     return -1;
 }
 
 void terminate_app_context(struct AppContext* ctx)
 {
-    terminate_renderer(&ctx->shader_program);
-    terminate_window(ctx->window);
+    terminate_renderer(&ctx->graphics.shader_program);
+    terminate_window(ctx->graphics.window);
     terminate_settings();
-    terminate_logger(&ctx->client_logger);
-    terminate_logger(&ctx->server_logger);
+    terminate_logger();
 }

@@ -4,18 +4,26 @@
 
 #include "logger.h"
 
-int init_logger(struct Logger* logger, const char* log_path)
+static struct Log logs[2] = {0};
+
+int init_logger(const char* client_log_path, const char* server_log_path)
 {
-    if (log_path == NULL) {
-        fprintf(stderr, "Cannot add log with NULL log path\n");
+    if (client_log_path == NULL || server_log_path == NULL) {
+        fprintf(stderr, "Logger cannot be initiated with NULL log path\n");
         return -1;
     }
 
-    logger->fp = fopen(log_path, "w");
-    logger->log_level = LOG_LEVEL_DEFAULT;
+    logs[CLIENT_LOG].fp = fopen(client_log_path, "w");
+    logs[SERVER_LOG].fp = fopen(server_log_path, "w");
+    logs[CLIENT_LOG].log_level = LOG_LEVEL_DEFAULT;
+    logs[SERVER_LOG].log_level = LOG_LEVEL_DEFAULT;
 
-    if (logger->fp == NULL) {
-        fprintf(stderr, "Logger cannot open file (%s) for writing\n", log_path);
+    if (logs[CLIENT_LOG].fp == NULL) {
+        fprintf(stderr, "Logger cannot open file (%s) for writing\n", client_log_path);
+        return -1;
+    }
+    if (logs[SERVER_LOG].fp == NULL) {
+        fprintf(stderr, "Logger cannot open file (%s) for writing\n", server_log_path);
         return -1;
     }
 
@@ -33,39 +41,42 @@ inline const char* log_level_to_string(LogLevel level)
     }
 }
 
-void logger_set_log_level(struct Logger* logger, LogLevel level)
+void logger_set_log_level(LogIndex index, LogLevel level)
 {
-    logger->log_level = level;
+    logs[index].log_level = level;
 }
 
-void logger_log_message(struct Logger* logger, LogLevel level, const char* fmt, ...)
+void logger_log_message(LogIndex index, LogLevel level, const char* fmt, ...)
 {
-    if (logger == NULL) {
-        printf("Cannot log to NULL logger pointer\n");
+    if (index != CLIENT_LOG && index != SERVER_LOG) {
+        printf("Cannot print to log of index (%d)\n", index);
         return;
     }
-    if (level < logger->log_level)
+    if (level < logs[index].log_level)
         return;
 
-    if (logger->fp) {
-        fprintf(logger->fp, "%s : ", log_level_to_string(level));
+    if (logs[index].fp) {
+        fprintf(logs[index].fp, "%s : ", log_level_to_string(level));
 
         va_list list;
         va_start(list, fmt);
-        vfprintf(logger->fp, fmt, list);
+        vfprintf(logs[index].fp, fmt, list);
         va_end(list);
 
-        fprintf(logger->fp, "\n");
-        fflush(logger->fp);
+        fprintf(logs[index].fp, "\n");
+        fflush(logs[index].fp);
     }
     else {
         fprintf(stderr, "Cannot log to uninitialised logger\n");
     }
 }
 
-void terminate_logger(struct Logger* logger)
+void terminate_logger()
 {
-    if (logger->fp != NULL)
-        fclose(logger->fp);
-    logger->fp == NULL;
+    if (logs[CLIENT_LOG].fp != NULL)
+        fclose(logs[CLIENT_LOG].fp);
+    if (logs[SERVER_LOG].fp != NULL)
+        fclose(logs[SERVER_LOG].fp);
+    logs[CLIENT_LOG].fp == NULL;
+    logs[SERVER_LOG].fp == NULL;
 }

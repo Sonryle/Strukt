@@ -32,14 +32,14 @@ struct AppPaths {
 	char server_log_path[FILENAME_MAX];
 };
 
-struct AppContext {
-	struct AppPaths paths;
-	struct Logger client_logger;
-	struct Logger server_logger;
+struct AppGraphicContext {
 	GLFWwindow* window;
 	GLuint VBO;
 	GLuint VAO;
 	GLuint shader_program;
 };
 
-extern struct AppContext app_context;
+struct AppContext {
+	struct AppPaths paths;
+	struct AppGraphicContext graphics;
+};
