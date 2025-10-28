@@ -7,12 +7,9 @@
 #include <client/settings.h>
 #include <client/window.h>
 
-GLFWwindow* window;
-GLFWmonitor* monitor;
+void framebuffer_size_callback(GLFWwindow* window, GLint width, GLint height);
 
-void framebuffer_size_callback(GLFWwindow* window, int width, int height);
-
-int init_window(void)
+int init_window(GLFWwindow** window)
 {
         if (!glfwInit())
         {
@@ -23,11 +20,12 @@ int init_window(void)
         glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
         glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
-        monitor = glfwGetPrimaryMonitor();
+        
         if (settings.window->fullscreen)
         {
+            GLFWmonitor* monitor = glfwGetPrimaryMonitor();
             const GLFWvidmode* mode = glfwGetVideoMode(monitor);
-            window = glfwCreateWindow(
+            *window = glfwCreateWindow(
                     mode->width,
                     mode->height,
                     settings.window->title,
@@ -36,8 +34,7 @@ int init_window(void)
             );
         }
         else {
-
-            window = glfwCreateWindow(
+            *window = glfwCreateWindow(
                 settings.window->initial_width,
                 settings.window->initial_height,
                 settings.window->title,
@@ -46,19 +43,19 @@ int init_window(void)
             );
         }
 
-        if (window == NULL)
+        if (*window == NULL)
         {
                 log_err("failed to create GLFW window");
                 glfwTerminate();
                 return -1;
         }
 
-        glfwMakeContextCurrent(window);
-        glfwSetWindowSizeCallback(window, framebuffer_size_callback);
+        glfwMakeContextCurrent(*window);
+        glfwSetWindowSizeCallback(*window, framebuffer_size_callback);
         return 0;
 }
 
-void terminate_window()
+void terminate_window(GLFWwindow* window)
 {
         glfwDestroyWindow(window);
         glfwTerminate();

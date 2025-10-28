@@ -134,7 +134,7 @@ int create_shader(GLenum shader_type, const char* shader_path, GLuint* shader_pt
     return 0;
 }
 
-int temporary_render(GLuint* VAO, GLuint* shader_program)
+int temporary_render(GLuint* VAO, GLuint* shader_program, GLFWwindow* window)
 {
         glClear(GL_COLOR_BUFFER_BIT);
 

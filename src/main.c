@@ -16,7 +16,6 @@ int join_path(const char* path_name, const char* path1, const char* path2, const
 int setup_paths(struct AppPaths* paths);
 int init_subsystems(struct AppContext* ctx);
 void terminate_app_context(struct AppContext* ctx);
-void terminate_subsystems(struct AppContext* ctx);
 
 struct AppContext app_context = { 0 };
 
@@ -27,9 +26,9 @@ int main()
         return -1;
     }
 
-    while (!glfwWindowShouldClose(window))
+    while (!glfwWindowShouldClose(app_context.window))
     {
-        temporary_render(&app_context.VAO, &app_context.shader_program);
+        temporary_render(&app_context.VAO, &app_context.shader_program, app_context.window);
 
         /* Poll for and process events */
         glfwPollEvents();
@@ -111,7 +110,7 @@ int init_subsystems(struct AppContext* ctx)
         logger_log_message(&ctx->client_logger, LOG_ERROR, "Could not initialise client settings");
         goto cleanup_client_settings;
     }
-    if (init_window() != 0) {
+    if (init_window(&ctx->window) != 0) {
         logger_log_message(&ctx->client_logger, LOG_ERROR, "Could not initialise window");
         goto cleanup_client_window;
     }
@@ -135,7 +134,7 @@ cleanup_all:
 cleanup_server_log:
     terminate_renderer(&ctx->shader_program);
 cleanup_client_renderer:
-    terminate_window();
+    terminate_window(ctx->window);
 cleanup_client_window:
     terminate_settings();
 cleanup_client_settings:
@@ -147,7 +146,7 @@ cleanup_client_log:
 void terminate_app_context(struct AppContext* ctx)
 {
     terminate_renderer(&ctx->shader_program);
-    terminate_window();
+    terminate_window(ctx->window);
     terminate_settings();
     terminate_logger(&ctx->client_logger);
     terminate_logger(&ctx->server_logger);

@@ -4,7 +4,5 @@
 #pragma once
 #include <GLFW/glfw3.h>
 
-extern GLFWwindow* window;
-
-int init_window();
-void terminate_window();
+int init_window(GLFWwindow** window);
+void terminate_window(GLFWwindow* window);
