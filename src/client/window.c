@@ -3,13 +3,13 @@
 #include <tomlc17.h>
 
 #include <main.h>
+#include <settings.h>
 #include <client/client.h>
-#include <client/settings.h>
 #include <client/window.h>
 
 void framebuffer_size_callback(GLFWwindow* window, GLint width, GLint height);
 
-int init_window(GLFWwindow** window)
+int init_window(GLFWwindow** window, struct ClientWindowSettings* settings)
 {
         if (!glfwInit())
         {
@@ -21,23 +21,23 @@ int init_window(GLFWwindow** window)
         glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
         
-        if (settings.window->fullscreen)
+        if (settings->fullscreen)
         {
             GLFWmonitor* monitor = glfwGetPrimaryMonitor();
             const GLFWvidmode* mode = glfwGetVideoMode(monitor);
             *window = glfwCreateWindow(
                     mode->width,
                     mode->height,
-                    settings.window->title,
+                    settings->title,
                     monitor,
                     NULL
             );
         }
         else {
             *window = glfwCreateWindow(
-                settings.window->initial_width,
-                settings.window->initial_height,
-                settings.window->title,
+                settings->initial_width,
+                settings->initial_height,
+                settings->title,
                 NULL,
                 NULL
             );

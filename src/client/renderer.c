@@ -3,8 +3,8 @@
 #include <GLFW/glfw3.h>
 
 #include <main.h>
+#include <settings.h>
 #include <client/client.h>
-#include <client/settings.h>
 #include <client/renderer.h>
 #include <client/window.h>
 
@@ -17,16 +17,14 @@ float vertices[] = {
      0.0f,  0.5f, 0.0f
 };
 
-int init_renderer(GLuint* VBO, GLuint* VAO, GLuint* shader_program, const char* vshader_path, const char* fshader_path)
+int init_renderer(GLuint* VBO, GLuint* VAO, GLuint* shader_program, const char* vshader_path, const char* fshader_path, struct ClientRendererSettings* settings)
 {
     if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress)) {
         log_err("failed to initialize GLAD");
         glfwTerminate();
         return -1;
     }
-
-    glClearColor(settings.renderer->bgr, settings.renderer->bgg, settings.renderer->bgb, 1.0f);
-    glViewport(0, 0, settings.window->initial_width, settings.window->initial_height);
+    glClearColor(settings->bgr, settings->bgg, settings->bgb, 1.0f);
 
     // Create Buffers
     // --------------

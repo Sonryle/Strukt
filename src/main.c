@@ -6,7 +6,7 @@
 #include <ASCIIart.h>
 #include <main.h>
 #include <logger.h>
-#include <client/settings.h>
+#include <settings.h>
 #include <client/window.h>
 #include <client/renderer.h>
 
@@ -16,6 +16,20 @@ int setup_paths(struct AppPaths* paths);
 int init_subsystems(struct AppContext* ctx);
 void terminate_app_context(struct AppContext* ctx);
 
+/* Default settings will be replaced by settings in settings file */
+struct Settings settings = {
+    .client_window = {
+        .title = "Welcome To Strukt",
+        .initial_width = 500,
+        .initial_height = 250,
+        .fullscreen = false,
+    },
+    .client_renderer = {
+        .bgr = 0.52f,
+        .bgg = 0.25f,
+        .bgb = 0.75f,
+    },
+};
 
 int main()
 {
@@ -105,21 +119,22 @@ int init_subsystems(struct AppContext* ctx)
     else {
         logger_log_message(CLIENT_LOG, LOG_INFO, "Welcome To The Client Log Of\n%s", PROJECT_NAME_ASCII_ART5);
     }
-    // Initialise client environment
 
-    if (parse_client_settings(ctx->paths.client_settings_path) != 0) {
+    // Initialise client environment
+    if (parse_client_settings(&settings, ctx->paths.client_settings_path) != 0) {
         logger_log_message(CLIENT_LOG, LOG_ERROR, "Could not initialise client settings");
         goto cleanup_client_settings;
     }
-    if (init_window(&ctx->graphics.window) != 0) {
+    if (init_window(&ctx->graphics.window, &settings.client_window) != 0) {
         logger_log_message(CLIENT_LOG, LOG_ERROR, "Could not initialise window");
         goto cleanup_client_window;
     }
-    if (init_renderer(&ctx->graphics.VBO, &ctx->graphics.VAO, &ctx->graphics.shader_program, ctx->paths.client_vshader_path, ctx->paths.client_fshader_path) != 0) {
+    if (init_renderer(&ctx->graphics.VBO, &ctx->graphics.VAO, &ctx->graphics.shader_program, ctx->paths.client_vshader_path, ctx->paths.client_fshader_path, &settings.client_renderer) != 0) {
         logger_log_message(CLIENT_LOG, LOG_ERROR, "Could not initialise renderer");
         goto cleanup_client_renderer;
     }
     // Initialise server environment
+    // Nothing to do here yet
 
     return 0;
 
