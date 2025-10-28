@@ -11,7 +11,7 @@ int init_logger(struct Logger* logger, const char* log_path)
         return -1;
     }
 
-    logger->fp = fopen(log_path, "a");
+    logger->fp = fopen(log_path, "w");
     logger->log_level = LOG_LEVEL_DEFAULT;
 
     if (logger->fp == NULL) {

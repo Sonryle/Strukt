@@ -1,6 +1,7 @@
 #pragma once
 
 #include <main.h>
+#include <logger.h>
 
 #define log_err(fmt, ...) logger_log_message(&app_context.client_logger, LOG_ERROR, fmt, ##__VA_ARGS__)
 #define log_info(fmt, ...) logger_log_message(&app_context.client_logger, LOG_INFO, fmt, ##__VA_ARGS__)
