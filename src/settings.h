@@ -19,7 +19,6 @@ struct ClientRendererSettings {
 struct Settings {
         struct ClientWindowSettings client_window;
         struct ClientRendererSettings client_renderer;
-
 };
 
 int parse_client_settings(struct Settings* settings, char* settings_path);

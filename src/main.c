@@ -10,14 +10,18 @@
 #include <client/window.h>
 #include <client/renderer.h>
 
-int init_app_context(struct AppContext* ctx);
+int init_app_context(struct AppContext* ctx, struct Settings* settings);
 int join_path(const char* path_name, const char* path1, const char* path2, const char* dest, int dest_size);
 int setup_paths(struct AppPaths* paths);
-int init_subsystems(struct AppContext* ctx);
+int init_subsystems(struct AppContext* ctx, struct Settings* settings);
 void terminate_app_context(struct AppContext* ctx);
 
 /* Default settings will be replaced by settings in settings file */
-struct Settings settings = {
+
+int main()
+{
+    struct AppContext app_context = { 0 };
+    struct Settings settings = {
     .client_window = {
         .title = "Welcome To Strukt",
         .initial_width = 500,
@@ -29,13 +33,9 @@ struct Settings settings = {
         .bgg = 0.25f,
         .bgb = 0.75f,
     },
-};
+    };
 
-int main()
-{
-    struct AppContext app_context = { 0 };
-
-    if (init_app_context(&app_context) != 0) {
+    if (init_app_context(&app_context, &settings) != 0) {
         fprintf(stderr, "could not initiate app context\n");
         return -1;
     }
@@ -52,13 +52,13 @@ int main()
     return 0;
 }
 
-int init_app_context(struct AppContext* ctx)
+int init_app_context(struct AppContext* ctx, struct Settings* settings)
 {
     if (setup_paths(&ctx->paths) != 0) {
         fprintf(stderr, "could not set up paths for app context\n");
         return -1;
     }
-    if (init_subsystems(ctx) != 0) {
+    if (init_subsystems(ctx, settings) != 0) {
         fprintf(stderr, "Could not initialise subsystems for app context\n");
         return -1;
     }
@@ -109,7 +109,7 @@ int setup_paths(struct AppPaths* paths)
     return 0;
 }
 
-int init_subsystems(struct AppContext* ctx)
+int init_subsystems(struct AppContext* ctx, struct Settings* settings)
 {
     // Initialies global environment
     if (init_logger(ctx->paths.client_log_path, ctx->paths.server_log_path) != 0) {
@@ -121,15 +121,15 @@ int init_subsystems(struct AppContext* ctx)
     }
 
     // Initialise client environment
-    if (parse_client_settings(&settings, ctx->paths.client_settings_path) != 0) {
+    if (parse_client_settings(settings, ctx->paths.client_settings_path) != 0) {
         logger_log_message(CLIENT_LOG, LOG_ERROR, "Could not initialise client settings");
         goto cleanup_client_settings;
     }
-    if (init_window(&ctx->graphics.window, &settings.client_window) != 0) {
+    if (init_window(&ctx->graphics.window, &settings->client_window) != 0) {
         logger_log_message(CLIENT_LOG, LOG_ERROR, "Could not initialise window");
         goto cleanup_client_window;
     }
-    if (init_renderer(&ctx->graphics.VBO, &ctx->graphics.VAO, &ctx->graphics.shader_program, ctx->paths.client_vshader_path, ctx->paths.client_fshader_path, &settings.client_renderer) != 0) {
+    if (init_renderer(&ctx->graphics.VBO, &ctx->graphics.VAO, &ctx->graphics.shader_program, ctx->paths.client_vshader_path, ctx->paths.client_fshader_path, &settings->client_renderer) != 0) {
         logger_log_message(CLIENT_LOG, LOG_ERROR, "Could not initialise renderer");
         goto cleanup_client_renderer;
     }
