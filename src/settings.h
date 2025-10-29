@@ -22,4 +22,5 @@ struct Settings {
 };
 
 int parse_client_settings(struct Settings* settings, char* settings_path);
+void get_default_settings(struct Settings* settings);
 void terminate_settings();

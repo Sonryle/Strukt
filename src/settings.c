@@ -17,21 +17,51 @@ toml_result_t toml_output;
 
 int parse_client_settings(struct Settings* settings, char* settings_path)
 {
-        if (fopen(settings_path, "r") == NULL)
-                create_client_settings_file(settings, settings_path);
+    /*
+    * I want to clean up the code just generally, but specifically this settings code.
+    * I dont like how "parse_client_settings" will create a settings file for you if
+    * one isnt already there. Thats not what I signed up for when I called the "parse" function.
+    * I want that code to be brought upstream somewhere and for this code to just give an error
+    * if no file is found.
+    * 
+    * Speaking of errors, the logging system only has two logs for the client and server. Settings
+    * has nowhere to log to. I want to fix this (maybe by adding a "global environment" log..
+    * Seems a bit finicky and I dont like it too much.
+    */
+    if (fopen(settings_path, "r") == NULL) {
+        get_default_settings(&settings);
+        create_client_settings_file(settings, settings_path);
+    }
 
-        toml_output = toml_parse_file_ex(settings_path);
-        if (!toml_output.ok)
-        {
-                log_err("unable to load \"%s\", Toml error \"%s\"", settings_path, toml_output.errmsg);
-                return -1;
-        }
+    toml_output = toml_parse_file_ex(settings_path);
+    if (!toml_output.ok)
+    {
+            log_err("unable to load \"%s\", Toml error \"%s\"", settings_path, toml_output.errmsg);
+            return -1;
+    }
 
-        parse_client_window_settings(&settings->client_window);
-        parse_renderer_settings(&settings->client_renderer);
+    parse_client_window_settings(&settings->client_window);
+    parse_renderer_settings(&settings->client_renderer);
 
-        toml_free(toml_output);
-        return 0;
+    toml_free(toml_output);
+    return 0;
+}
+
+void get_default_settings(struct Settings* settings)
+{
+    *settings = (struct Settings) {
+    .client_window = {
+        .title = "Welcome To Strukt",
+        .initial_width = 500,
+        .initial_height = 250,
+        .fullscreen = false,
+    },
+    .client_renderer = {
+        .bgr = 0.52f,
+        .bgg = 0.25f,
+        .bgb = 0.75f,
+    },
+    };
 }
 
 void create_client_settings_file(struct Settings* settings, char* settings_path)

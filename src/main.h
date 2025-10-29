@@ -1,18 +1,17 @@
 #pragma once
+
+#if defined (_WIN32)
+#include <direct.h>
+#else
+#include <sys/stat.h>
+#endif
 #include <stdio.h>
 
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
 
 #include <logger.h>
-
-#if defined (_WIN32)
-#include <direct.h>
-#define MKDIR(path) _mkdir(path)
-#else
-#include <sys/stat.h>
-#define MKDIR(path) mkdir(path, 0755)
-#endif
+#include <settings.h>
 
 #define PROJECT_NAME "Strukt"
 #define CLIENT_LOG_FILENAME "client_log.txt"
@@ -32,7 +31,7 @@ struct AppPaths {
 	char server_log_path[FILENAME_MAX];
 };
 
-struct AppGraphicContext {
+struct AppGraphics {
 	GLFWwindow* window;
 	GLuint VBO;
 	GLuint VAO;
@@ -41,5 +40,6 @@ struct AppGraphicContext {
 
 struct AppContext {
 	struct AppPaths paths;
-	struct AppGraphicContext graphics;
+	struct AppGraphics graphics;
+	struct Settings settings;
 };
