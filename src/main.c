@@ -1,34 +1,42 @@
+#if defined (_WIN32)
+#include <direct.h>
+#else
+#include <sys/stat.h>
+#endif
 #include <stdlib.h>
 #include <errno.h>
 #include <stdarg.h>
+#include <stdio.h>
 
 #include <cwalk.h>
 
-#include <ASCIIart.h>
 #include <main.h>
+#include <ASCIIart.h>
 #include <logger.h>
 #include <settings.h>
 #include <client/window.h>
 #include <client/renderer.h>
 
-void log_early_error(const char* message, ...);
-int init_app_context(struct AppContext* ctx, struct Settings* settings);
+/* This is neccessary as we need to be able to log */
+/* errors even before the logger is initialised. */
+#define log_early_error(fmt, ...) fprintf(stderr, fmt,  ##__VA_ARGS__)
+
 int setup_path(const char* path_name, const char* path1, const char* path2, const char* dest, int dest_size);
 int make_directory(const char* path);
 int get_project_root_dir(struct AppPaths* paths);
 int setup_paths(struct AppPaths* paths);
-int init_subsystems(struct AppContext* ctx, struct Settings* settings);
-void terminate_app_context(struct AppContext* ctx);
+int init_subsystems(struct AppState* app_state);
+void terminate_app_context(struct AppState* app_state);
 
 int main()
 {
-    /* 
-    * AppContext struct holds the context of the entire application.
-    * 
-    */
-    struct AppContext app_context = { 0 };
-    if (init_app_context(&app_context, &app_context.settings) != 0) {
-        log_early_error("could not initiate app context");
+    struct AppState app_context = { 0 };
+    if (setup_paths(&app_context.paths) != 0) {
+        log_early_error("could not set up paths for app context");
+        return -1;
+    }
+    if (init_subsystems(&app_context) != 0) {
+        log_early_error("Could not initialise subsystems for app context");
         return -1;
     }
 
@@ -44,34 +52,10 @@ int main()
     return 0;
 }
 
-void log_early_error(const char* message, ...)
-{
-    /* This is neccessary as we need to be able to log errors */
-    /* even before the logger is initialised. */
-    va_list list;
-    va_start(list, message);
-    vfprintf(stderr, message, list);
-    fprintf(stderr, "\n");
-    va_end(list);
-}
-
-int init_app_context(struct AppContext* ctx, struct Settings* settings)
-{
-    if (setup_paths(&ctx->paths) != 0) {
-        log_early_error("could not set up paths for app context");
-        return -1;
-    }
-    if (init_subsystems(ctx, settings) != 0) {
-        log_early_error("Could not initialise subsystems for app context");
-        return -1;
-    }
-    return 0;
-}
-
 int setup_path(const char* path_name, const char* path1, const char* path2, const char* dest, int dest_size)
 {
     int size = cwk_path_join(path1, path2, dest, dest_size);
-    if (size >= dest_size) {
+        if (size >= dest_size) {
         log_early_error("%s path too long (max %d). Truncated path: %s", path_name, dest_size, dest);
         return -1;
     }
@@ -123,6 +107,7 @@ int setup_paths(struct AppPaths* paths)
 
     // Server Paths
     if (setup_path("server log", paths->project_root_path, SERVER_LOG_FILENAME, paths->server_log_path, sizeof(paths->server_log_path)) != 0) return -1;
+    if (setup_path("server settings", paths->project_root_path, SERVER_SETTINGS_FILENAME, paths->server_settings_path, sizeof(paths->server_settings_path)) != 0) return -1;
 
     // Create required directories
     if (make_directory(paths->project_root_path) != 0) return -1;
@@ -131,34 +116,45 @@ int setup_paths(struct AppPaths* paths)
     return 0;
 }
 
-int init_subsystems(struct AppContext* ctx, struct Settings* settings)
+int init_subsystems(struct AppState* app_state)
 {
     // Initialise global environment
-    int err = init_logger(ctx->paths.client_log_path, ctx->paths.server_log_path);
+    int err = init_logger(app_state->paths.client_log_path,
+                        app_state->paths.server_log_path);
     if (err != 0) { log_early_error("Could not initialise logger"); goto failure_logger; }
-    logger_log_message(CLIENT_LOG, LOG_INFO, "Welcome To The Client Log Of\n%s", PROJECT_NAME_ASCII_ART5);
 
     // Initialise client environment
-    err = parse_client_settings(settings, ctx->paths.client_settings_path);
+    err = init_settings(&app_state->client_settings,
+                        &app_state->server_settings,
+                        app_state->paths.client_settings_path,
+                        app_state->paths.server_settings_path);
     if (err != 0) { logger_log_message(CLIENT_LOG, LOG_ERROR, "Could not initialise client settings"); goto failure_client_settings; }
-    logger_log_message(CLIENT_LOG, LOG_INFO, "Client settings successfully parsed");
+    logger_log_message(CLIENT_LOG, LOG_INFO, "Settings successfully initiated & parsed");
 
-    err = init_window(&ctx->graphics.window, &settings->client_window);
+    err = init_window(&app_state->graphics.window,
+                    app_state->client_settings.window.title,
+                    app_state->client_settings.window.initial_width,
+                    app_state->client_settings.window.initial_height,
+                    app_state->client_settings.window.fullscreen);
     if (err != 0) { logger_log_message(CLIENT_LOG, LOG_ERROR, "Could not initialise window"); goto failure_client_window; }
     logger_log_message(CLIENT_LOG, LOG_INFO, "Client window successfully initiated");
 
-    err = init_renderer(&ctx->graphics.VBO, &ctx->graphics.VAO, &ctx->graphics.shader_program,
-                        ctx->paths.client_vshader_path, ctx->paths.client_fshader_path,
-                        &settings->client_renderer);
+    err = init_renderer(&app_state->graphics.VBO, &app_state->graphics.VAO, &app_state->graphics.shader_program,
+                        app_state->paths.client_vshader_path, app_state->paths.client_fshader_path,
+                        &app_state->client_settings.renderer);
     if (err != 0) { logger_log_message(CLIENT_LOG, LOG_ERROR, "Could not initialise renderer"); goto failure_client_renderer; }
     logger_log_message(CLIENT_LOG, LOG_INFO, "Client renderer successfully initiated");
 
     // Initialise server environment
-    // Nothing to do here yet
+    // Nothing to do here yet.
+
+    // Set log levels after 
+    logger_set_log_level(CLIENT_LOG, app_state->client_settings.log_level);
+    logger_set_log_level(SERVER_LOG, app_state->server_settings.log_level);
     return 0;
 
 failure_client_renderer:
-    terminate_window(ctx->graphics.window);
+    terminate_window(app_state->graphics.window);
 failure_client_window:
     terminate_settings();
 failure_client_settings:
@@ -167,10 +163,12 @@ failure_logger:
     return -1;
 }
 
-void terminate_app_context(struct AppContext* ctx)
+void terminate_app_context(struct AppState* app_state)
 {
-    terminate_renderer(&ctx->graphics.shader_program);
-    terminate_window(ctx->graphics.window);
+    logger_log_message(CLIENT_LOG, LOG_INFO, "%s Session Terminated. Goodbye!\n%s\n", PROJECT_NAME, ASCII_TEXT_DIVIDER);
+    logger_log_message(SERVER_LOG, LOG_INFO, "%s Session Terminated. Goodbye!\n%s\n", PROJECT_NAME, ASCII_TEXT_DIVIDER);
+    terminate_renderer(&app_state->graphics.shader_program);
+    terminate_window(app_state->graphics.window);
     terminate_settings();
     terminate_logger();
 }

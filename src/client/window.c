@@ -9,7 +9,7 @@
 
 void framebuffer_size_callback(GLFWwindow* window, GLint width, GLint height);
 
-int init_window(GLFWwindow** window, struct ClientWindowSettings* settings)
+int init_window(GLFWwindow** window, const char* title, int initial_width, int initial_height, bool is_fullscreen)
 {
         if (!glfwInit())
         {
@@ -21,23 +21,23 @@ int init_window(GLFWwindow** window, struct ClientWindowSettings* settings)
         glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
         
-        if (settings->fullscreen)
+        if (is_fullscreen)
         {
             GLFWmonitor* monitor = glfwGetPrimaryMonitor();
             const GLFWvidmode* mode = glfwGetVideoMode(monitor);
             *window = glfwCreateWindow(
                     mode->width,
                     mode->height,
-                    settings->title,
+                    title,
                     monitor,
                     NULL
             );
         }
         else {
             *window = glfwCreateWindow(
-                settings->initial_width,
-                settings->initial_height,
-                settings->title,
+                initial_width,
+                initial_height,
+                title,
                 NULL,
                 NULL
             );

@@ -5,5 +5,5 @@
 #include <GLFW/glfw3.h>
 #include <settings.h>
 
-int init_window(GLFWwindow** window, struct ClientWindowSettings* settings);
+int init_window(GLFWwindow** window, const char* title, int initial_width, int initial_height, bool is_fullscreen);
 void terminate_window(GLFWwindow* window);

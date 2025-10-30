@@ -42,7 +42,6 @@ int init_renderer(GLuint* VBO, GLuint* VAO, GLuint* shader_program, const char* 
     /* Copy user-defined data into currently bound buffer of type GL_ARRAY_BUFFER */
     glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), &vertices, GL_STATIC_DRAW);
 
-    log_info("vs_path = %s fs_path = %s", vshader_path, fshader_path);
     if (build_shader_program(vshader_path, fshader_path, shader_program) != 0)
         return -1;
     glUseProgram(*shader_program);
@@ -111,8 +110,6 @@ int create_shader(GLenum shader_type, const char* shader_path, GLuint* shader_pt
     fread((void*)src, sizeof(char), char_count, shader_file);
     src[char_count] = '\0';
     fclose(shader_file);
-
-    log_info("shader source =\n%s", src);
 
     /* Create and compile shader */
     *shader_ptr = glCreateShader(shader_type);

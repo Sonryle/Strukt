@@ -3,6 +3,7 @@
 #include <stdio.h>
 
 #include "logger.h"
+#include "ASCIIart.h"
 
 static struct Log logs[2] = {0};
 
@@ -13,10 +14,12 @@ int init_logger(const char* client_log_path, const char* server_log_path)
         return -1;
     }
 
-    logs[CLIENT_LOG].fp = fopen(client_log_path, "w");
-    logs[SERVER_LOG].fp = fopen(server_log_path, "w");
+    logs[CLIENT_LOG].fp = fopen(client_log_path, "a");
+    logs[SERVER_LOG].fp = fopen(server_log_path, "a");
     logs[CLIENT_LOG].log_level = LOG_LEVEL_DEFAULT;
     logs[SERVER_LOG].log_level = LOG_LEVEL_DEFAULT;
+    logger_log_message(CLIENT_LOG, LOG_INFO, "Client log successfully initiated, Welcome to the Client Log of\n%s", PROJECT_NAME_ASCII_ART5);
+    logger_log_message(SERVER_LOG, LOG_INFO, "Server log successfully initiated, Welcome to the Server Log of\n%s", PROJECT_NAME_ASCII_ART4);
 
     if (logs[CLIENT_LOG].fp == NULL) {
         fprintf(stderr, "Logger cannot open file (%s) for writing\n", client_log_path);
@@ -44,6 +47,7 @@ inline const char* log_level_to_string(LogLevel level)
 void logger_set_log_level(LogIndex index, LogLevel level)
 {
     logs[index].log_level = level;
+    fprintf(logs[index].fp, "Logger : Log Level changed to \"%s\"\n", log_level_to_string(level));
 }
 
 void logger_log_message(LogIndex index, LogLevel level, const char* fmt, ...)
