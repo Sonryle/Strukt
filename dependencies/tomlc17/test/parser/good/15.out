@@ -1,5 +1,0 @@
-{
-  "str1": {"type": "string", "value": "abc"},
-  "str2": {"type": "string", "value": "abc"},
-  "str3": {"type": "string", "value": "abc"}
-}

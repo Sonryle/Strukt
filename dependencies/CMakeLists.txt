@@ -1,4 +1,0 @@
-add_subdirectory(glad)
-add_subdirectory(glfw-3.4)
-add_subdirectory(tomlc17)
-add_subdirectory(cwalk)
