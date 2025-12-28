@@ -3,25 +3,14 @@ set (CMAKE_EXPORT_COMPILE_COMMANDS ON)
 set (CMAKE_CXX_STANDARD 17)
 project(strukt)
 
-# Add the executable
 file(GLOB_RECURSE SRC_FILES "src/*.c")
 file(GLOB_RECURSE HEADER_FILES "src/*.h")
 add_executable(strukt ${SRC_FILES} ${HEADER_FILES})
-
-# Add includes
 target_include_directories(strukt PUBLIC ./src)
 
-# Add all libraries
 add_subdirectory(dependencies)
-
-# Link all libraries
-target_link_libraries(strukt PRIVATE glad)
-target_link_libraries(strukt PRIVATE glfw)
-target_link_libraries(strukt PRIVATE tomlc17)
-target_link_libraries(strukt PRIVATE cwalk)
+target_link_libraries(strukt glfw)
+target_link_libraries(strukt glad)
 
 # Set our project as the Visual Studio startup project
 set_property(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR} PROPERTY VS_STARTUP_PROJECT ${CMAKE_PROJECT_NAME})
-
-# Define "_DEBUG" macro if needed
-set(CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS_DEBUG} -D_DEBUG")
