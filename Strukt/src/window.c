@@ -1,16 +1,15 @@
 #include <Strukt/window.h>
-#define GLFW_INCLUDE_NONE
-#include <GLFW/glfw3.h>
-#include <glad/glad.h>
-
+#include <Strukt/renderer.h>
 #include <Strukt/logger.h>
 
-static GLFWwindow* window = NULL;
+struct struct_window window = {
+    .window_handle = NULL,
+};
 
 int windowInit(int window_width, int window_height, char* window_title)
 {
-    log_info("Initiating Graphics");
-    if (window != NULL) {
+    log_info("Initiating Window");
+    if (window.window_handle != NULL) {
         log_warn("Cannot initiate window more than once");
         return -1;
     }
@@ -21,13 +20,13 @@ int windowInit(int window_width, int window_height, char* window_title)
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
     glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
 
-    window = glfwCreateWindow(window_width, window_height, window_title, NULL, NULL);
-    if (window == NULL) {
+    window.window_handle = glfwCreateWindow(window_width, window_height, window_title, NULL, NULL);
+    if (window.window_handle == NULL) {
         log_fatal("Failed to create GLFW window");
         glfwTerminate();
         return -1;
     }
-    glfwMakeContextCurrent(window);
+    glfwMakeContextCurrent(window.window_handle);
 
     if (gladLoadGLLoader((GLADloadproc)glfwGetProcAddress) == 0) {
         log_fatal("Failed to initialise GLAD openGL function loader");
@@ -40,13 +39,13 @@ int windowInit(int window_width, int window_height, char* window_title)
 
 int windowShouldClose()
 {
-    return glfwWindowShouldClose(window);
+    return glfwWindowShouldClose(window.window_handle);
 }
 
 void windowFlush()
 {
-    glClear(GL_COLOR_BUFFER_BIT);
-    glfwSwapBuffers(window);
+    rendererFlush();
+    glfwSwapBuffers(window.window_handle);
 }
 
 void windowPollEvents()
@@ -56,8 +55,8 @@ void windowPollEvents()
 
 void windowTerminate()
 {
-    if (window != NULL) {
-        glfwDestroyWindow(window);
+    if (window.window_handle != NULL) {
+        glfwDestroyWindow(window.window_handle);
         glfwTerminate();
     }
     else
