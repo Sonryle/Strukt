@@ -1,3 +1,3 @@
 # Strukt
 
-Hello mense this is my brand new game it's gonna be sooooo sick i'm telling you
+Hello mense this is my rendering/game engine its gonna be mediocrely okay and im so excited!!
