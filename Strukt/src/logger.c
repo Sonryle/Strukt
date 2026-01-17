@@ -1,7 +1,7 @@
 #include <stdio.h>
 #include <stdarg.h>
 
-#include <logger/logger.h>
+#include "Strukt/logger.h"
 
 static char* log_level_to_string(LOG_LEVEL lvl)
 {

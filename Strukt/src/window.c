@@ -1,9 +1,9 @@
-#include "window/window.h"
+#include <Strukt/window.h>
 #define GLFW_INCLUDE_NONE
 #include <GLFW/glfw3.h>
 #include <glad/glad.h>
 
-#include <logger/logger.h>
+#include <Strukt/logger.h>
 
 static GLFWwindow* window = NULL;
 

@@ -1,5 +1,5 @@
-#include <window/window.h>
-#include <logger/logger.h>
+#include <Strukt/window.h>
+#include <Strukt/logger.h>
 
 int main()
 {
