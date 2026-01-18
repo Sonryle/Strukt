@@ -1,19 +1,15 @@
-#include "Strukt/renderer.h"
-#include <Strukt/window.h>
+#include <Strukt/strukt.h>
 #include <Strukt/logger.h>
 
 int main()
 {
     log_info("Hello World!");
-    windowInit(500, 450, "Strukt | Beta");
-    rendererInit();
 
-    while(!windowShouldClose())
-    {
-        windowPollEvents();
-        windowFlush();
-    }
+    // Set up strukt instance
+    struct strukt_instance my_instance;
+    struktReturnDefaultInstance(&my_instance);
 
-    windowTerminate();
+    // Run strukt engine
+    struktRun(&my_instance);
     return 0;
 }

@@ -2,14 +2,14 @@
 #include <Strukt/renderer.h>
 #include <Strukt/logger.h>
 
-struct struct_window window = {
-    .window_handle = NULL,
-};
+void __framebufferSizeCallback(GLFWwindow* window, int width, int height);
 
-int windowInit(int window_width, int window_height, char* window_title)
+
+
+int windowInit(struct strukt_window* window)
 {
     log_info("Initiating Window");
-    if (window.window_handle != NULL) {
+    if (window->window_handle != NULL) {
         log_warn("Cannot initiate window more than once");
         return -1;
     }
@@ -20,13 +20,17 @@ int windowInit(int window_width, int window_height, char* window_title)
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
     glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
 
-    window.window_handle = glfwCreateWindow(window_width, window_height, window_title, NULL, NULL);
-    if (window.window_handle == NULL) {
+    window->window_handle = glfwCreateWindow(window->window_width,
+                                             window->window_height,
+                                             window->window_title,
+                                             NULL, NULL);
+    if (window->window_handle == NULL) {
         log_fatal("Failed to create GLFW window");
         glfwTerminate();
         return -1;
     }
-    glfwMakeContextCurrent(window.window_handle);
+    glfwMakeContextCurrent(window->window_handle);
+    glfwSetFramebufferSizeCallback(window->window_handle, __framebufferSizeCallback);
 
     if (gladLoadGLLoader((GLADloadproc)glfwGetProcAddress) == 0) {
         log_fatal("Failed to initialise GLAD openGL function loader");
@@ -37,28 +41,34 @@ int windowInit(int window_width, int window_height, char* window_title)
     return 0;
 }
 
-int windowShouldClose()
+int windowShouldClose(struct strukt_window* window)
 {
-    return glfwWindowShouldClose(window.window_handle);
+    return glfwWindowShouldClose(window->window_handle);
 }
 
-void windowFlush()
+void windowSwapBuffers(struct strukt_window* window)
 {
-    rendererFlush();
-    glfwSwapBuffers(window.window_handle);
+    glfwSwapBuffers(window->window_handle);
 }
 
-void windowPollEvents()
+void windowPollEvents(struct strukt_window* window)
 {
     glfwPollEvents();
 }
 
-void windowTerminate()
+void windowTerminate(struct strukt_window* window)
 {
-    if (window.window_handle != NULL) {
-        glfwDestroyWindow(window.window_handle);
+    if (window->window_handle != NULL) {
+        glfwDestroyWindow(window->window_handle);
         glfwTerminate();
     }
     else
         log_warn("terminating window while window == NULL");
+}
+
+void __framebufferSizeCallback(GLFWwindow* window, int width, int height)
+{
+    // make sure the viewport matches the new window dimensions; note that width and 
+    // height will be significantly larger than specified on retina displays.
+    glViewport(0, 0, width, height);
 }
